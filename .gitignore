@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Build & distribution outputs
+dist/
+dist-cpanel/
+release/
+
+# Testing & reports
+playwright-report/
+test-results/
+coverage/
+
+# Local AI model weights & caches
+local-models/
+
+# Untracked audio fixtures & private recordings/embeddings
+*.wav
+*.mp3
+*.ogg
+*.flac
+*.m4a
+private-recordings/
+private-embeddings/
+embeddings/
+recordings/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Generated ONNX Runtime Web runtime assets (rebuilt via postinstall / setup:runtime)
+public/runtime/*.wasm
+public/runtime/*.mjs
+public/runtime/*.js
+
+# OS & editor artifacts
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*

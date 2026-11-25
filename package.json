@@ -1,0 +1,46 @@
+{
+  "name": "voiceforge-studio",
+  "private": true,
+  "version": "0.1.0",
+  "description": "100% client-side AI voice cloning and narration studio powered by ONNX Runtime Web.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "node scripts/copy-ort-runtime.mjs && tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "setup:runtime": "node scripts/copy-ort-runtime.mjs",
+    "postinstall": "node scripts/copy-ort-runtime.mjs"
+  },
+  "dependencies": {
+    "@breezystack/lamejs": "1.2.7",
+    "fflate": "0.8.3",
+    "idb": "8.0.4",
+    "lucide-react": "1.80.0",
+    "onnxruntime-web": "1.31.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "zustand": "5.1.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "@tailwindcss/vite": "4.3.5",
+    "@types/node": "26.6.10",
+    "@types/react": "19.3.2",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.3.0",
+    "eslint": "10.15.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-react-refresh": "0.5.8",
+    "globals": "17.14.0",
+    "jsdom": "31.0.1",
+    "tailwindcss": "4.3.5",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.74.0",
+    "vitest": "5.1.1"
+  }
+}
