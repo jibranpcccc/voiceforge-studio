@@ -1,6 +1,36 @@
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { AudioWaveform, ShieldCheck } from 'lucide-react';
 
+const PocHarness = lazy(() => import('./pages/PocHarness'));
+
+function isPocRoute(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.location.hash === '#/poc' || window.location.hash.startsWith('#/poc?');
+}
+
 export function App() {
+  const [pocMode, setPocMode] = useState<boolean>(isPocRoute);
+
+  useEffect(() => {
+    const onHashChange = () => setPocMode(isPocRoute());
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  if (pocMode) {
+    return (
+      <Suspense
+        fallback={
+          <div className="min-h-screen bg-slate-950 text-slate-300 flex items-center justify-center font-mono text-sm">
+            Loading PoC Harness...
+          </div>
+        }
+      >
+        <PocHarness />
+      </Suspense>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
       <main className="max-w-xl w-full rounded-2xl border border-slate-800 bg-slate-900/70 p-8 shadow-2xl">

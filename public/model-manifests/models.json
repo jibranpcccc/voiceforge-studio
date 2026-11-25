@@ -1,0 +1,239 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-25T00:00:00Z",
+  "defaultEngineId": "pocket-tts",
+  "models": [
+    {
+      "engineId": "pocket-tts",
+      "displayName": "Pocket TTS (English 2026-04, INT8)",
+      "repoId": "KevinAHM/pocket-tts-onnx",
+      "revision": "58a6d00cf13d239b6748cb0769f35c580a8f606c",
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://huggingface.co/KevinAHM/pocket-tts-onnx/blob/58a6d00cf13d239b6748cb0769f35c580a8f606c/README.md",
+      "ungated": true,
+      "precision": "int8",
+      "sampleRate": 24000,
+      "recommendedExecutionMode": "cpu",
+      "estimatedMemoryMb": 550,
+      "totalSizeBytes": 146243590,
+      "artifacts": [
+        {
+          "role": "text_conditioner",
+          "relativePath": "onnx/english_2026-04/text_conditioner.onnx",
+          "url": "https://huggingface.co/KevinAHM/pocket-tts-onnx/resolve/58a6d00cf13d239b6748cb0769f35c580a8f606c/onnx/english_2026-04/text_conditioner.onnx",
+          "sizeBytes": 16388344,
+          "sha256": "4ecee995fb69f85c7a7493d11f7b5ee15d9950facc7ab3f5c9c49ef1e03847bb",
+          "format": "onnx",
+          "required": true
+        },
+        {
+          "role": "flow_lm_main",
+          "relativePath": "onnx/english_2026-04/flow_lm_main_int8.onnx",
+          "url": "https://huggingface.co/KevinAHM/pocket-tts-onnx/resolve/58a6d00cf13d239b6748cb0769f35c580a8f606c/onnx/english_2026-04/flow_lm_main_int8.onnx",
+          "sizeBytes": 76341079,
+          "sha256": "f9bd8106b79a0192c1c43399ab938fb24900a95c1c599870d75a884e99000116",
+          "format": "onnx",
+          "required": true
+        },
+        {
+          "role": "flow_lm_flow",
+          "relativePath": "onnx/english_2026-04/flow_lm_flow_int8.onnx",
+          "url": "https://huggingface.co/KevinAHM/pocket-tts-onnx/resolve/58a6d00cf13d239b6748cb0769f35c580a8f606c/onnx/english_2026-04/flow_lm_flow_int8.onnx",
+          "sizeBytes": 9962530,
+          "sha256": "3dd781ee5abee9e195320bf0106bebd6372a852b3b36352524ee78b40554635d",
+          "format": "onnx",
+          "required": true
+        },
+        {
+          "role": "mimi_decoder",
+          "relativePath": "onnx/english_2026-04/mimi_decoder_int8.onnx",
+          "url": "https://huggingface.co/KevinAHM/pocket-tts-onnx/resolve/58a6d00cf13d239b6748cb0769f35c580a8f606c/onnx/english_2026-04/mimi_decoder_int8.onnx",
+          "sizeBytes": 22684077,
+          "sha256": "3630450a3297a101792a6ac66619ebc70ab916b265e6220c2afaef8b1673f925",
+          "format": "onnx",
+          "required": true
+        },
+        {
+          "role": "mimi_encoder",
+          "relativePath": "onnx/english_2026-04/mimi_encoder_int8.onnx",
+          "url": "https://huggingface.co/KevinAHM/pocket-tts-onnx/resolve/58a6d00cf13d239b6748cb0769f35c580a8f606c/onnx/english_2026-04/mimi_encoder_int8.onnx",
+          "sizeBytes": 20779616,
+          "sha256": "abb46f1ad0b83c3840fe38c3652ab0eda7d1d97a63f1953bbbff5d04d8f4c855",
+          "format": "onnx",
+          "required": true
+        },
+        {
+          "role": "bos_before_voice",
+          "relativePath": "onnx/english_2026-04/bos_before_voice.npy",
+          "url": "https://huggingface.co/KevinAHM/pocket-tts-onnx/resolve/58a6d00cf13d239b6748cb0769f35c580a8f606c/onnx/english_2026-04/bos_before_voice.npy",
+          "sizeBytes": 4224,
+          "sha256": "f46edf4f7007b7ba4ea58831f49d003e59e167b4641c44bb3addfe9231a780b1",
+          "format": "bin",
+          "required": true
+        },
+        {
+          "role": "bundle_config",
+          "relativePath": "onnx/english_2026-04/bundle.json",
+          "url": "https://huggingface.co/KevinAHM/pocket-tts-onnx/resolve/58a6d00cf13d239b6748cb0769f35c580a8f606c/onnx/english_2026-04/bundle.json",
+          "sizeBytes": 24381,
+          "sha256": "bab643150f437f37df080a710520ff39ed9ebd9a339f8ebdc739f7eddfc28b3f",
+          "format": "json",
+          "required": true
+        },
+        {
+          "role": "tokenizer",
+          "relativePath": "onnx/english_2026-04/tokenizer.model",
+          "url": "https://huggingface.co/KevinAHM/pocket-tts-onnx/resolve/58a6d00cf13d239b6748cb0769f35c580a8f606c/onnx/english_2026-04/tokenizer.model",
+          "sizeBytes": 59339,
+          "sha256": "d461765ae179566678c93091c5fa6f2984c31bbe990bf1aa62d92c64d91bc3f6",
+          "format": "spm",
+          "required": true
+        }
+      ],
+      "notes": [
+        "Runs via ONNX Runtime Web WASM (SIMD); single-threaded WASM works without COOP/COEP headers.",
+        "Includes mimi_encoder_int8.onnx for 100% client-side zero-shot voice cloning from reference audio.",
+        "text_conditioner.onnx is kept in FP32 (16,388,344 B) as it is a pure Gather table smaller than its INT8 copy."
+      ]
+    },
+    {
+      "engineId": "chatterbox",
+      "displayName": "Chatterbox ONNX (WebGPU q4f16)",
+      "repoId": "onnx-community/chatterbox-ONNX",
+      "revision": "3cab09af388d3f02bba43443fce88c1f4525ac43",
+      "license": "MIT",
+      "licenseUrl": "https://huggingface.co/onnx-community/chatterbox-ONNX/blob/3cab09af388d3f02bba43443fce88c1f4525ac43/README.md",
+      "ungated": true,
+      "precision": "q4f16",
+      "sampleRate": 24000,
+      "recommendedExecutionMode": "quality",
+      "estimatedMemoryMb": 2400,
+      "totalSizeBytes": 1499431645,
+      "artifacts": [
+        {
+          "role": "config",
+          "relativePath": "config.json",
+          "url": "https://huggingface.co/onnx-community/chatterbox-ONNX/resolve/3cab09af388d3f02bba43443fce88c1f4525ac43/config.json",
+          "sizeBytes": 1097,
+          "sha256": "a7d8518edd1cf6346e4d2be33201747ea4c476718db756f42e6959e4828f4955",
+          "format": "json",
+          "required": true
+        },
+        {
+          "role": "generation_config",
+          "relativePath": "generation_config.json",
+          "url": "https://huggingface.co/onnx-community/chatterbox-ONNX/resolve/3cab09af388d3f02bba43443fce88c1f4525ac43/generation_config.json",
+          "sizeBytes": 93,
+          "sha256": "1b6fbb953861089ebe7da64df46eeef570d53f47a44b7cc1b4d543669fc9cd50",
+          "format": "json",
+          "required": true
+        },
+        {
+          "role": "preprocessor_config",
+          "relativePath": "preprocessor_config.json",
+          "url": "https://huggingface.co/onnx-community/chatterbox-ONNX/resolve/3cab09af388d3f02bba43443fce88c1f4525ac43/preprocessor_config.json",
+          "sizeBytes": 130,
+          "sha256": "1c320b2eea5f45678d17d891d51c38467775091dbf26a074635ba5e98ede5950",
+          "format": "json",
+          "required": true
+        },
+        {
+          "role": "tokenizer",
+          "relativePath": "tokenizer.json",
+          "url": "https://huggingface.co/onnx-community/chatterbox-ONNX/resolve/3cab09af388d3f02bba43443fce88c1f4525ac43/tokenizer.json",
+          "sizeBytes": 28543,
+          "sha256": "ecddf6aaae85e271610a2743409f7e447886957d0b0836687c1eaec5ccac2891",
+          "format": "json",
+          "required": true
+        },
+        {
+          "role": "tokenizer_config",
+          "relativePath": "tokenizer_config.json",
+          "url": "https://huggingface.co/onnx-community/chatterbox-ONNX/resolve/3cab09af388d3f02bba43443fce88c1f4525ac43/tokenizer_config.json",
+          "sizeBytes": 244,
+          "sha256": "b35967f93e30313d05fc9d520721ca9f671aaa5b3edbb03059aed3ff68b4c4c0",
+          "format": "json",
+          "required": true
+        },
+        {
+          "role": "speech_encoder",
+          "relativePath": "onnx/speech_encoder.onnx",
+          "url": "https://huggingface.co/onnx-community/chatterbox-ONNX/resolve/3cab09af388d3f02bba43443fce88c1f4525ac43/onnx/speech_encoder.onnx",
+          "sizeBytes": 1184608,
+          "sha256": "8f1c8a0f89b77bf9cd5dd8f2e034eb2c79dc00fe70d41196b28c257643b00ccb",
+          "format": "onnx",
+          "required": true
+        },
+        {
+          "role": "speech_encoder_data",
+          "relativePath": "onnx/speech_encoder.onnx_data",
+          "url": "https://huggingface.co/onnx-community/chatterbox-ONNX/resolve/3cab09af388d3f02bba43443fce88c1f4525ac43/onnx/speech_encoder.onnx_data",
+          "sizeBytes": 591274880,
+          "sha256": "04431dcef6325c54b02de2219845888b464bcd1f1ac2f8839c2fecd1ed2ef294",
+          "format": "onnx_data",
+          "required": true
+        },
+        {
+          "role": "embed_tokens",
+          "relativePath": "onnx/embed_tokens.onnx",
+          "url": "https://huggingface.co/onnx-community/chatterbox-ONNX/resolve/3cab09af388d3f02bba43443fce88c1f4525ac43/onnx/embed_tokens.onnx",
+          "sizeBytes": 13286,
+          "sha256": "160722ec14789f616abdb1e31916cbbf9223c03fde0ab546d64ca74fb72e430b",
+          "format": "onnx",
+          "required": true
+        },
+        {
+          "role": "embed_tokens_data",
+          "relativePath": "onnx/embed_tokens.onnx_data",
+          "url": "https://huggingface.co/onnx-community/chatterbox-ONNX/resolve/3cab09af388d3f02bba43443fce88c1f4525ac43/onnx/embed_tokens.onnx_data",
+          "sizeBytes": 61640704,
+          "sha256": "898c563c3a5ca1b9ea10ce89b0cdcf252b0bb5ab460dfc4eadea003b56e5d2ee",
+          "format": "onnx_data",
+          "required": true
+        },
+        {
+          "role": "conditional_decoder",
+          "relativePath": "onnx/conditional_decoder.onnx",
+          "url": "https://huggingface.co/onnx-community/chatterbox-ONNX/resolve/3cab09af388d3f02bba43443fce88c1f4525ac43/onnx/conditional_decoder.onnx",
+          "sizeBytes": 6350448,
+          "sha256": "1656d0d31332bae1854839959a3139300ebb67c178651dfa3f8c5fbfa5351351",
+          "format": "onnx",
+          "required": true
+        },
+        {
+          "role": "conditional_decoder_data",
+          "relativePath": "onnx/conditional_decoder.onnx_data",
+          "url": "https://huggingface.co/onnx-community/chatterbox-ONNX/resolve/3cab09af388d3f02bba43443fce88c1f4525ac43/onnx/conditional_decoder.onnx_data",
+          "sizeBytes": 533970816,
+          "sha256": "51d58345a272747665ec9d5bb61e01835258a940e321a288582ac4c18cf01b5a",
+          "format": "onnx_data",
+          "required": true
+        },
+        {
+          "role": "language_model",
+          "relativePath": "onnx/language_model_q4f16.onnx",
+          "url": "https://huggingface.co/onnx-community/chatterbox-ONNX/resolve/3cab09af388d3f02bba43443fce88c1f4525ac43/onnx/language_model_q4f16.onnx",
+          "sizeBytes": 229388,
+          "sha256": "3b78e9235be5e2e2a811e482399155cb30415f6d87c98c21d12bf48843fc928f",
+          "format": "onnx",
+          "required": true
+        },
+        {
+          "role": "language_model_data",
+          "relativePath": "onnx/language_model_q4f16.onnx_data",
+          "url": "https://huggingface.co/onnx-community/chatterbox-ONNX/resolve/3cab09af388d3f02bba43443fce88c1f4525ac43/onnx/language_model_q4f16.onnx_data",
+          "sizeBytes": 304737408,
+          "sha256": "2480da95471e4cd41a6b1876686e65e8a594c82459f2e5d6fd7592a5bad4e6da",
+          "format": "onnx_data",
+          "required": true
+        }
+      ],
+      "notes": [
+        "Uses onnx-community/chatterbox-ONNX pinned at commit 3cab09af388d3f02bba43443fce88c1f4525ac43 (MIT license).",
+        "Default pinned artifact set targets WebGPU with shader-f16 (q4f16 language_model, float16 KV cache, 1,499,431,645 B total).",
+        "When shader-f16 is unavailable or running in balanced/WASM fallback mode, ChatterboxEngine selects q4 (language_model_q4.onnx + .onnx_data, 1,548,314,008 B total) via getChatterboxManifestEntry('q4').",
+        "WASM CPU fallback runs ~5.8x slower than real-time; WebGPU is strongly recommended."
+      ]
+    }
+  ]
+}
