@@ -10,7 +10,9 @@ export interface PronunciationModalProps {
   open: boolean;
   onClose: () => void;
   rules: PronunciationRule[];
-  onSaveRule: (rule: Omit<PronunciationRule, 'id'> & { id?: string }) => Promise<PronunciationRule>;
+  onSaveRule: (
+    rule: Omit<PronunciationRule, 'id'> & { id?: string }
+  ) => Promise<PronunciationRule>;
   onToggleRule: (id: string) => Promise<void>;
   onDeleteRule: (id: string) => Promise<void>;
 }
@@ -90,15 +92,15 @@ export function PronunciationModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] shadow-2xl">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] shadow-2xl">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--vf-border-subtle)]">
           <div className="flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-[#7C5CFF]" />
+            <BookOpen className="w-4 h-4 text-[var(--vf-accent)]" />
             <div>
-              <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+              <h2 className="text-base font-semibold text-[var(--vf-text)]">
                 Pronunciation Dictionary
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-[var(--vf-text-muted)]">
                 Non-destructive phonetic &amp; acronym substitutions stored locally in IndexedDB.
               </p>
             </div>
@@ -106,7 +108,8 @@ export function PronunciationModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+            className="p-1.5 rounded-md text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:bg-[var(--vf-surface-muted)] transition"
+            aria-label="Close pronunciation modal"
           >
             <X className="w-4 h-4" />
           </button>
@@ -116,11 +119,11 @@ export function PronunciationModal({
           {/* Add / Edit Rule Form */}
           <form
             onSubmit={handleSubmit}
-            className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0B0D12]/60 p-4 space-y-3"
+            className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-bg)] p-4 space-y-3"
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-medium text-[var(--vf-text-muted)] mb-1">
                   Match Word / Pattern
                 </label>
                 <input
@@ -128,11 +131,11 @@ export function PronunciationModal({
                   value={pattern}
                   onChange={(e) => setPattern(e.target.value)}
                   placeholder="e.g. ONNX or \\bv(\\d+)\\.(\\d+)\\b"
-                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121622] px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-[#7C5CFF] focus:outline-none"
+                  className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface)] px-3 py-1.5 text-xs text-[var(--vf-text)] placeholder:text-[var(--vf-text-subtle)] focus:border-[var(--vf-accent)] focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-medium text-[var(--vf-text-muted)] mb-1">
                   Spoken Replacement
                 </label>
                 <input
@@ -140,19 +143,19 @@ export function PronunciationModal({
                   value={replacement}
                   onChange={(e) => setReplacement(e.target.value)}
                   placeholder="e.g. on-icks"
-                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121622] px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-[#7C5CFF] focus:outline-none"
+                  className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface)] px-3 py-1.5 text-xs text-[var(--vf-text)] placeholder:text-[var(--vf-text-subtle)] focus:border-[var(--vf-accent)] focus:outline-none"
                 />
               </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-300">
+              <div className="flex items-center gap-4 text-xs text-[var(--vf-text-muted)]">
                 <label className="inline-flex items-center gap-1.5 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={isRegex}
                     onChange={(e) => setIsRegex(e.target.checked)}
-                    className="accent-[#7C5CFF]"
+                    className="accent-[var(--vf-accent)]"
                   />
                   Regex
                 </label>
@@ -161,7 +164,7 @@ export function PronunciationModal({
                     type="checkbox"
                     checked={caseSensitive}
                     onChange={(e) => setCaseSensitive(e.target.checked)}
-                    className="accent-[#7C5CFF]"
+                    className="accent-[var(--vf-accent)]"
                   />
                   Case-sensitive
                 </label>
@@ -172,14 +175,14 @@ export function PronunciationModal({
                   <button
                     type="button"
                     onClick={resetForm}
-                    className="px-3 py-1.5 rounded-lg text-xs border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300"
+                    className="px-3 py-1.5 rounded-md text-xs border border-[var(--vf-border)] bg-[var(--vf-surface)] text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] transition"
                   >
                     Cancel Edit
                   </button>
                 )}
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#7C5CFF] text-white hover:bg-[#6A48F5] transition"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-[var(--vf-accent)] text-white hover:bg-[var(--vf-accent-hover)] transition"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   {editingId ? 'Update Rule' : 'Add Rule'}
@@ -192,23 +195,23 @@ export function PronunciationModal({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Optional note (e.g. brand pronunciation)"
-              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121622] px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-[#7C5CFF] focus:outline-none"
+              className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface)] px-3 py-1.5 text-xs text-[var(--vf-text)] placeholder:text-[var(--vf-text-subtle)] focus:border-[var(--vf-accent)] focus:outline-none"
             />
 
-            {error && <p className="text-xs text-rose-500">{error}</p>}
+            {error && <p className="text-xs text-[var(--vf-danger)]">{error}</p>}
           </form>
 
           {/* Rule List */}
           <div className="space-y-2">
-            <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <div className="text-xs font-semibold text-[var(--vf-text)] tabular-nums">
               Saved Rules ({rules.length})
             </div>
             {rules.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-6 text-center text-xs text-slate-500 dark:text-slate-400">
+              <div className="rounded-lg border border-dashed border-[var(--vf-border)] p-6 text-center text-xs text-[var(--vf-text-muted)]">
                 No custom pronunciation rules saved yet.
               </div>
             ) : (
-              <div className="divide-y divide-slate-200 dark:divide-slate-800 rounded-xl border border-slate-200 dark:border-slate-800">
+              <div className="divide-y divide-[var(--vf-border-subtle)] rounded-lg border border-[var(--vf-border)]">
                 {rules.map((rule) => (
                   <div
                     key={rule.id}
@@ -219,30 +222,30 @@ export function PronunciationModal({
                         type="checkbox"
                         checked={rule.enabled}
                         onChange={() => void onToggleRule(rule.id)}
-                        className="accent-[#7C5CFF]"
+                        className="accent-[var(--vf-accent)]"
                       />
                       <div className={`min-w-0 ${rule.enabled ? '' : 'opacity-50 line-through'}`}>
                         <div className="flex flex-wrap items-center gap-1.5">
-                          <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-mono">
+                          <code className="px-1.5 py-0.5 rounded-sm bg-[var(--vf-surface-muted)] text-[var(--vf-text)] font-mono">
                             {rule.pattern}
                           </code>
-                          <span className="text-slate-400">&rarr;</span>
-                          <span className="font-medium text-[#7C5CFF]">
+                          <span className="text-[var(--vf-text-subtle)]">&rarr;</span>
+                          <span className="font-medium text-[var(--vf-accent)]">
                             {rule.replacement || '(empty)'}
                           </span>
                           {rule.isRegex && (
-                            <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 text-[10px]">
+                            <span className="px-1.5 py-0.5 rounded-sm bg-[var(--vf-accent)]/12 text-[var(--vf-accent)] text-[10px] font-mono">
                               regex
                             </span>
                           )}
                           {rule.caseSensitive && (
-                            <span className="px-1.5 py-0.5 rounded bg-slate-500/10 text-slate-400 text-[10px]">
+                            <span className="px-1.5 py-0.5 rounded-sm bg-[var(--vf-surface-muted)] text-[var(--vf-text-muted)] text-[10px] font-mono">
                               case
                             </span>
                           )}
                         </div>
                         {rule.note && (
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                          <div className="text-[11px] text-[var(--vf-text-muted)] mt-0.5">
                             {rule.note}
                           </div>
                         )}
@@ -253,7 +256,7 @@ export function PronunciationModal({
                       <button
                         type="button"
                         onClick={() => startEdit(rule)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+                        className="p-1.5 rounded-md text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:bg-[var(--vf-surface-muted)] transition"
                         title="Edit rule"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -261,7 +264,7 @@ export function PronunciationModal({
                       <button
                         type="button"
                         onClick={() => void onDeleteRule(rule.id)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition"
+                        className="p-1.5 rounded-md text-[var(--vf-text-muted)] hover:text-[var(--vf-danger)] hover:bg-[var(--vf-danger)]/10 transition"
                         title="Delete rule"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -274,18 +277,18 @@ export function PronunciationModal({
           </div>
 
           {/* Live Test Preview */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3.5 space-y-2">
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <div className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] p-3.5 space-y-2">
+            <label className="block text-xs font-semibold text-[var(--vf-text)]">
               Live Rule Tester
             </label>
             <input
               type="text"
               value={testPhrase}
               onChange={(e) => setTestPhrase(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100"
+              className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-3 py-1.5 text-xs text-[var(--vf-text)] focus:border-[var(--vf-accent)] focus:outline-none"
             />
-            <div className="text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-[#0B0D12]/60 rounded-lg px-3 py-2">
-              <span className="text-[10px] uppercase tracking-wider text-slate-400 block mb-0.5">
+            <div className="text-xs text-[var(--vf-text)] bg-[var(--vf-bg)] border border-[var(--vf-border-subtle)] rounded-md px-3 py-2">
+              <span className="text-[10px] uppercase tracking-wider text-[var(--vf-text-subtle)] block mb-0.5">
                 Normalized Synthesis Input
               </span>
               {previewOutput}

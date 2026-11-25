@@ -72,10 +72,10 @@ export function ScriptEditor({
 
   return (
     <div
-      className={`rounded-xl border transition-colors ${
+      className={`rounded-lg border transition-colors ${
         isDragging
-          ? 'border-[#7C5CFF] bg-[#7C5CFF]/5'
-          : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622]'
+          ? 'border-[var(--vf-accent)] bg-[var(--vf-accent)]/5'
+          : 'border-[var(--vf-border)] bg-[var(--vf-surface)]'
       }`}
       onDragOver={(e) => {
         e.preventDefault();
@@ -85,19 +85,23 @@ export function ScriptEditor({
       onDrop={onDrop}
     >
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 border-b border-slate-200 dark:border-slate-800/80">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 border-b border-[var(--vf-border-subtle)]">
         <div className="flex items-center gap-2">
-          <FileText className="w-4 h-4 text-[#7C5CFF]" />
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+          <FileText className="w-4 h-4 text-[var(--vf-accent)]" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-[var(--vf-text-muted)]">
             Narration Script
           </span>
           {lastDraftSavedAt && (
             <span
-              className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-300"
+              className="inline-flex items-center gap-1 rounded-md bg-[var(--vf-success)]/10 border border-[var(--vf-success)]/25 px-2 py-0.5 text-[11px] font-medium tabular-nums text-[var(--vf-success)]"
               title={`Last autosaved at ${new Date(lastDraftSavedAt).toLocaleString()}`}
             >
               <CheckCircle2 className="w-3 h-3" />
-              Autosaved {new Date(lastDraftSavedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              Autosaved{' '}
+              {new Date(lastDraftSavedAt).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
             </span>
           )}
         </div>
@@ -107,7 +111,7 @@ export function ScriptEditor({
             type="button"
             onClick={onUndo}
             disabled={!canUndo || disabled}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:border-[var(--vf-text-subtle)] disabled:opacity-40 disabled:cursor-not-allowed transition"
             title="Undo script edit"
           >
             <Undo2 className="w-3.5 h-3.5" />
@@ -117,7 +121,7 @@ export function ScriptEditor({
             type="button"
             onClick={onRedo}
             disabled={!canRedo || disabled}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:border-[var(--vf-text-subtle)] disabled:opacity-40 disabled:cursor-not-allowed transition"
             title="Redo script edit"
           >
             <Redo2 className="w-3.5 h-3.5" />
@@ -141,7 +145,7 @@ export function ScriptEditor({
             type="button"
             disabled={disabled}
             onClick={() => fileInputRef.current?.click()}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 transition"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:border-[var(--vf-text-subtle)] disabled:opacity-40 transition"
             title="Import .TXT script file"
           >
             <Upload className="w-3.5 h-3.5" />
@@ -153,7 +157,7 @@ export function ScriptEditor({
               type="button"
               disabled={disabled}
               onClick={onClear}
-              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 disabled:opacity-40 transition"
+              className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-[var(--vf-danger)] hover:bg-[var(--vf-danger)]/10 disabled:opacity-40 transition"
               title="Clear script"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -163,13 +167,13 @@ export function ScriptEditor({
       </div>
 
       {importError && (
-        <div className="px-4 py-2 text-xs text-rose-600 dark:text-rose-300 bg-rose-500/10 border-b border-rose-500/20">
+        <div className="px-4 py-2 text-xs text-[var(--vf-danger)] bg-[var(--vf-danger)]/10 border-b border-[var(--vf-danger)]/25">
           {importError}
         </div>
       )}
 
       {/* Textarea */}
-      <div className="relative">
+      <div className="relative bg-[var(--vf-bg)]/40">
         <textarea
           ref={textareaRef}
           value={scriptText}
@@ -177,11 +181,11 @@ export function ScriptEditor({
           disabled={disabled}
           rows={14}
           placeholder="Write or paste your narration script here, or drag and drop a .txt file...&#10;&#10;Separate paragraphs with blank lines for natural pacing and independent paragraph regeneration."
-          className="w-full min-h-[300px] resize-y bg-transparent p-4 text-sm leading-relaxed text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none disabled:opacity-60"
+          className="w-full min-h-[300px] resize-y bg-transparent p-4 text-sm leading-relaxed text-[var(--vf-text)] placeholder:text-[var(--vf-text-subtle)] focus:outline-none disabled:opacity-60"
         />
         {isDragging && (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#7C5CFF]/15 backdrop-blur-[1px] pointer-events-none">
-            <div className="rounded-xl border border-[#7C5CFF] bg-white dark:bg-[#121622] px-5 py-3 text-sm font-medium text-[#7C5CFF] shadow-lg">
+          <div className="absolute inset-0 flex items-center justify-center bg-[var(--vf-accent)]/12 backdrop-blur-[1px] pointer-events-none">
+            <div className="rounded-lg border border-[var(--vf-accent)] bg-[var(--vf-surface)] px-5 py-3 text-sm font-medium text-[var(--vf-accent)] shadow-lg">
               Drop .TXT file to load script
             </div>
           </div>
@@ -189,22 +193,32 @@ export function ScriptEditor({
       </div>
 
       {/* Footer Telemetry */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 border-t border-slate-200 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 border-t border-[var(--vf-border-subtle)] text-xs text-[var(--vf-text-muted)] tabular-nums">
         <div className="flex flex-wrap items-center gap-4">
           <span>
-            <strong className="text-slate-800 dark:text-slate-200">{counts.words.toLocaleString()}</strong> words
+            <strong className="font-mono text-[var(--vf-text)]">
+              {counts.words.toLocaleString()}
+            </strong>{' '}
+            words
           </span>
           <span>
-            <strong className="text-slate-800 dark:text-slate-200">{counts.chars.toLocaleString()}</strong> chars
+            <strong className="font-mono text-[var(--vf-text)]">
+              {counts.chars.toLocaleString()}
+            </strong>{' '}
+            chars
           </span>
           <span>
-            <strong className="text-slate-800 dark:text-slate-200">{counts.paragraphs}</strong> paragraphs
+            <strong className="font-mono text-[var(--vf-text)]">{counts.paragraphs}</strong>{' '}
+            paragraphs
           </span>
         </div>
-        <div className="inline-flex items-center gap-1.5" title="Estimated at ~150 words per minute">
-          <Clock className="w-3.5 h-3.5 text-[#7C5CFF]" />
+        <div
+          className="inline-flex items-center gap-1.5"
+          title="Estimated at ~150 words per minute"
+        >
+          <Clock className="w-3.5 h-3.5 text-[var(--vf-accent)]" />
           <span>Est. duration (~150 WPM):</span>
-          <strong className="text-slate-800 dark:text-slate-200">
+          <strong className="font-mono text-[var(--vf-text)]">
             {formatDurationCompact(estDurationSec)}
           </strong>
         </div>

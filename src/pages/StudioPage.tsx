@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
+  AudioLines,
   BookOpen,
   CheckCircle2,
   Cpu,
@@ -8,13 +9,11 @@ import {
   History,
   Loader2,
   Play,
+  Radio,
   RefreshCw,
   Save,
-  ShieldAlert,
-  Sparkles,
   Volume2,
   VolumeX,
-  Wand2,
 } from 'lucide-react';
 import {
   OrderedStreamAudioPlayer,
@@ -804,40 +803,49 @@ export function StudioPage() {
   const activeModelState = models[selectedEngineId];
 
   return (
-    <div className="space-y-5">
-      {/* Persistent Synthetic Speech Disclosure Banner */}
-      <div className="rounded-xl border border-[#7C5CFF]/30 bg-[#7C5CFF]/10 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-800 dark:text-slate-200">
+    <div className="space-y-4">
+      {/* Compact Studio Disclosure & Cache Telemetry Strip */}
+      <div className="rounded-lg border border-[var(--vf-border-subtle)] bg-[var(--vf-surface)] px-3.5 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--vf-text-muted)]">
         <div className="flex items-center gap-2">
-          <ShieldAlert className="w-4 h-4 text-[#7C5CFF] shrink-0" />
+          <Radio className="w-3.5 h-3.5 text-[var(--vf-text-subtle)] shrink-0" />
           <span>
-            <strong>Synthetic Audio Disclosure:</strong> Generated audio is synthetic AI speech
-            synthesized 100% locally in your browser.
+            <strong className="font-medium text-[var(--vf-text)]">
+              Synthetic Audio Disclosure:
+            </strong>{' '}
+            Generated audio is synthetic AI speech synthesized 100% locally in your browser.
           </span>
         </div>
         {activeModelState && (
-          <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-mono tabular-nums text-[var(--vf-text-muted)]">
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                activeModelState.offlineReady
+                  ? 'bg-[var(--vf-success)]'
+                  : 'bg-[var(--vf-warning)]'
+              }`}
+            />
             Model cache: {activeModelState.offlineReady ? 'Offline Ready' : activeModelState.status}
           </span>
         )}
       </div>
 
-      {/* Top Workspace Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] px-4 py-3">
-        <div className="flex items-center gap-3 flex-1 min-w-[220px]">
+      {/* Top Console Toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] px-4 py-3">
+        <div className="flex items-center gap-2.5 flex-1 min-w-[220px]">
           <input
             type="text"
             value={projectTitle}
             onChange={(e) => setProjectTitle(e.target.value)}
             aria-label="Project title"
             placeholder="Project Title"
-            className="w-full max-w-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] px-3 py-1.5 text-sm font-semibold text-slate-900 dark:text-slate-100 focus:border-[#7C5CFF] focus:outline-none"
+            className="w-full max-w-sm rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-3 py-1.5 text-sm font-semibold text-[var(--vf-text)] placeholder:text-[var(--vf-text-subtle)] focus:border-[var(--vf-accent)] focus:outline-none"
           />
           <button
             type="button"
             onClick={() => void handleSaveProject()}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] text-[var(--vf-text)] hover:border-[var(--vf-text-subtle)] transition"
           >
-            <Save className="w-3.5 h-3.5" />
+            <Save className="w-3.5 h-3.5 text-[var(--vf-text-muted)]" />
             Save Project
           </button>
         </div>
@@ -846,18 +854,18 @@ export function StudioPage() {
           <button
             type="button"
             onClick={() => setPronunciationOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] text-[var(--vf-text)] hover:border-[var(--vf-text-subtle)] tabular-nums transition"
           >
-            <BookOpen className="w-3.5 h-3.5 text-[#7C5CFF]" />
+            <BookOpen className="w-3.5 h-3.5 text-[var(--vf-accent)]" />
             Pronunciation ({pronunciationRules.filter((r) => r.enabled).length})
           </button>
 
           <button
             type="button"
             onClick={() => setHistoryOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] text-[var(--vf-text)] hover:border-[var(--vf-text-subtle)] tabular-nums transition"
           >
-            <History className="w-3.5 h-3.5 text-[#7C5CFF]" />
+            <History className="w-3.5 h-3.5 text-[var(--vf-accent)]" />
             History ({historyEntries.length})
           </button>
 
@@ -865,7 +873,7 @@ export function StudioPage() {
             type="button"
             disabled={!masteredAudio && rawChunkMap.size === 0}
             onClick={() => setExportOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#7C5CFF] text-white hover:bg-[#6A48F5] disabled:opacity-40 disabled:cursor-not-allowed transition"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-[var(--vf-accent)] text-white hover:bg-[var(--vf-accent-hover)] disabled:opacity-40 disabled:cursor-not-allowed transition"
           >
             <Download className="w-3.5 h-3.5" />
             Export
@@ -873,18 +881,18 @@ export function StudioPage() {
         </div>
       </div>
 
-      {/* Voice, Engine, Language & Quality Preset Selectors */}
+      {/* Voice, Engine, Language & Quality Preset Strip */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
         {/* Voice Profile */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] p-3 space-y-1.5">
-          <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        <div className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-3 space-y-1.5">
+          <label className="block text-[11px] font-semibold uppercase tracking-wider text-[var(--vf-text-muted)]">
             Voice Profile
           </label>
           <select
             value={selectedVoiceId ?? ''}
             onChange={(e) => selectVoice(e.target.value || null)}
             disabled={queueState.isRunning}
-            className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] px-2.5 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-[#7C5CFF] focus:outline-none"
+            className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-2.5 py-1.5 text-xs text-[var(--vf-text)] focus:border-[var(--vf-accent)] focus:outline-none"
           >
             {voices.length === 0 ? (
               <option value="">No saved voices (create in Voice Cloning)</option>
@@ -902,15 +910,15 @@ export function StudioPage() {
         </div>
 
         {/* AI Engine */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] p-3 space-y-1.5">
-          <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        <div className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-3 space-y-1.5">
+          <label className="block text-[11px] font-semibold uppercase tracking-wider text-[var(--vf-text-muted)]">
             AI Synthesis Engine
           </label>
           <select
             value={selectedEngineId}
             onChange={(e) => selectEngine(e.target.value)}
             disabled={queueState.isRunning}
-            className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] px-2.5 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-[#7C5CFF] focus:outline-none"
+            className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-2.5 py-1.5 text-xs text-[var(--vf-text)] focus:border-[var(--vf-accent)] focus:outline-none"
           >
             {availableEngines.map((eng) => {
               const compat = selectedVoice ? isVoiceCompatibleWithEngine(selectedVoice, eng) : true;
@@ -925,15 +933,15 @@ export function StudioPage() {
         </div>
 
         {/* Language */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] p-3 space-y-1.5">
-          <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        <div className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-3 space-y-1.5">
+          <label className="block text-[11px] font-semibold uppercase tracking-wider text-[var(--vf-text-muted)]">
             Language
           </label>
           <select
             value={effectiveLanguage}
             onChange={(e) => setSelectedLanguage(e.target.value)}
             disabled={queueState.isRunning}
-            className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] px-2.5 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-[#7C5CFF] focus:outline-none"
+            className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-2.5 py-1.5 text-xs text-[var(--vf-text)] focus:border-[var(--vf-accent)] focus:outline-none"
           >
             {supportedLanguages.map((lang) => (
               <option key={lang.code} value={lang.code}>
@@ -944,15 +952,15 @@ export function StudioPage() {
         </div>
 
         {/* 7 Quality Presets */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] p-3 space-y-1.5">
-          <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        <div className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-3 space-y-1.5">
+          <label className="block text-[11px] font-semibold uppercase tracking-wider text-[var(--vf-text-muted)]">
             Studio Quality Preset
           </label>
           <select
             value={selectedPresetId}
             onChange={(e) => applyPreset(e.target.value as StudioPresetId)}
             disabled={queueState.isRunning}
-            className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] px-2.5 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-[#7C5CFF] focus:outline-none"
+            className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-2.5 py-1.5 text-xs text-[var(--vf-text)] focus:border-[var(--vf-accent)] focus:outline-none"
           >
             {STUDIO_PRESET_LIST.map((preset) => (
               <option key={preset.id} value={preset.id}>
@@ -965,12 +973,12 @@ export function StudioPage() {
 
       {/* Voice / Engine Compatibility Warning */}
       {selectedVoice && activeEngine && !voiceCompatible && (
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-xs text-amber-800 dark:text-amber-200">
+        <div className="rounded-lg border border-[var(--vf-warning)]/30 bg-[var(--vf-warning)]/10 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--vf-text)]">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+            <AlertTriangle className="w-4 h-4 text-[var(--vf-warning)] shrink-0" />
             <span>
               Voice profile <strong>{selectedVoice.name}</strong> has conditioning for{' '}
-              <code>{getProfileEngineIds(selectedVoice).join(', ') || 'none'}</code>, not{' '}
+              <code className="font-mono">{getProfileEngineIds(selectedVoice).join(', ') || 'none'}</code>, not{' '}
               <strong>{activeEngine.name}</strong>. Switch to a compatible engine or encode this
               voice for {activeEngine.name} in Voice Cloning.
             </span>
@@ -979,7 +987,7 @@ export function StudioPage() {
             <button
               type="button"
               onClick={() => selectEngine(getProfileEngineIds(selectedVoice)[0])}
-              className="px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-500/30 font-semibold hover:bg-amber-500/30 transition"
+              className="px-2.5 py-1 rounded-md bg-[var(--vf-warning)]/15 border border-[var(--vf-warning)]/30 text-[var(--vf-warning)] font-semibold hover:bg-[var(--vf-warning)]/25 transition"
             >
               Switch to {getProfileEngineIds(selectedVoice)[0]}
             </button>
@@ -989,35 +997,35 @@ export function StudioPage() {
 
       {/* Engine Download / Init Progress */}
       {initProgress && (
-        <div className="rounded-xl border border-[#7C5CFF]/30 bg-[#7C5CFF]/10 px-4 py-3 space-y-1.5 text-xs">
+        <div className="rounded-lg border border-[var(--vf-accent)]/35 bg-[var(--vf-surface)] px-4 py-3 space-y-1.5 text-xs">
           <div className="flex items-center justify-between">
-            <span className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-[#7C5CFF]" />
+            <span className="font-semibold text-[var(--vf-text)] flex items-center gap-2">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--vf-accent)]" />
               Initializing {activeEngine?.name}: {initProgress.item}
             </span>
-            <span className="font-mono text-[#7C5CFF]">
+            <span className="font-mono tabular-nums text-[var(--vf-accent)]">
               {Math.round(initProgress.progress * 100)}%
             </span>
           </div>
-          <div className="text-[11px] text-slate-600 dark:text-slate-300">{initProgress.message}</div>
+          <div className="text-[11px] text-[var(--vf-text-muted)]">{initProgress.message}</div>
         </div>
       )}
 
       {studioError && (
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2.5 text-xs text-rose-700 dark:text-rose-300">
+        <div className="rounded-lg border border-[var(--vf-danger)]/30 bg-[var(--vf-danger)]/10 px-4 py-2.5 text-xs text-[var(--vf-danger)]">
           {studioError}
         </div>
       )}
       {studioNotice && (
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-xs text-emerald-700 dark:text-emerald-300">
+        <div className="rounded-lg border border-[var(--vf-success)]/30 bg-[var(--vf-success)]/10 px-4 py-2.5 text-xs text-[var(--vf-success)]">
           {studioNotice}
         </div>
       )}
 
       {/* Main Workspace Grid: Editor + Paragraph Navigator */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Left/Center Column */}
-        <div className="lg:col-span-8 space-y-5">
+        <div className="lg:col-span-8 space-y-4">
           <ScriptEditor
             scriptText={scriptText}
             onChange={(text) => setScriptText(text)}
@@ -1033,7 +1041,7 @@ export function StudioPage() {
 
           {/* Primary Generate Action & Queue Progress */}
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
                 disabled={
@@ -1043,12 +1051,12 @@ export function StudioPage() {
                   !voiceCompatible
                 }
                 onClick={() => void handleGenerate()}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-[#7C5CFF] text-white hover:bg-[#6A48F5] disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-[#7C5CFF]/20 transition"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md text-sm font-semibold bg-[var(--vf-accent)] text-white hover:bg-[var(--vf-accent-hover)] disabled:opacity-40 disabled:cursor-not-allowed transition"
               >
                 {queueState.isRunning ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <Wand2 className="w-4 h-4" />
+                  <AudioLines className="w-4 h-4" />
                 )}
                 {queueState.isRunning ? 'Synthesizing Narration...' : 'Generate Narration'}
               </button>
@@ -1064,10 +1072,10 @@ export function StudioPage() {
                   }
                 }}
                 title="Stream audio chunks live as they generate (~0.6s start latency)"
-                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border transition ${
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium border transition ${
                   liveStreamEnabled
-                    ? 'border-[#7C5CFF]/40 bg-[#7C5CFF]/15 text-[#7C5CFF]'
-                    : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
+                    ? 'border-[var(--vf-accent)]/40 bg-[var(--vf-accent)]/12 text-[var(--vf-accent)]'
+                    : 'border-[var(--vf-border)] bg-[var(--vf-surface)] text-[var(--vf-text-muted)] hover:text-[var(--vf-text)]'
                 }`}
               >
                 {liveStreamEnabled ? (
@@ -1085,15 +1093,15 @@ export function StudioPage() {
               </button>
 
               {selectedEngineId === 'pocket-tts' && (
-                <label className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121622] px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-300">
-                  <Cpu className="w-3.5 h-3.5 text-[#7C5CFF]" />
+                <label className="inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface)] px-2.5 py-2 text-xs text-[var(--vf-text-muted)]">
+                  <Cpu className="w-3.5 h-3.5 text-[var(--vf-accent)]" />
                   <span>Workers:</span>
                   <select
                     aria-label="Parallel synthesis workers"
                     value={parallelWorkers}
                     disabled={queueState.isRunning}
                     onChange={(e) => setParallelWorkers(Number(e.target.value))}
-                    className="bg-transparent font-mono text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                    className="bg-transparent font-mono tabular-nums text-xs text-[var(--vf-text)] focus:outline-none"
                   >
                     <option value={0}>Auto</option>
                     <option value={1}>1</option>
@@ -1105,7 +1113,7 @@ export function StudioPage() {
               )}
             </div>
 
-            <span className="text-xs text-slate-500 dark:text-slate-400">
+            <span className="text-xs text-[var(--vf-text-muted)] tabular-nums">
               {navigatorItems.length} synthesis segment{navigatorItems.length === 1 ? '' : 's'} ·
               100% local IndexedDB queue
             </span>
@@ -1124,14 +1132,14 @@ export function StudioPage() {
             hasPendingWork={hasPendingWork}
           />
 
-          {/* Waveform Player */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] p-4 space-y-2">
-            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-              <span className="font-semibold text-slate-800 dark:text-slate-200">
+          {/* Audio Playback Deck */}
+          <div className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4 space-y-2.5">
+            <div className="flex items-center justify-between text-xs text-[var(--vf-text-muted)]">
+              <span className="font-semibold text-[var(--vf-text)]">
                 Audio Playback
               </span>
               {masteredAudio && (
-                <span className="font-mono">
+                <span className="font-mono tabular-nums">
                   {masteredAudio.sampleRate} Hz · {formatDurationCompact(masteredAudio.durationSec)}
                 </span>
               )}
@@ -1177,24 +1185,24 @@ export function StudioPage() {
         </div>
 
         {/* Right Sidebar: Paragraph / Chunk Navigator */}
-        <aside className="lg:col-span-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] flex flex-col max-h-[820px]">
-          <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <aside className="lg:col-span-4 rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] flex flex-col max-h-[820px]">
+          <div className="px-4 py-3 border-b border-[var(--vf-border-subtle)] flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+              <h3 className="text-sm font-semibold text-[var(--vf-text)]">
                 Paragraph Navigator
               </h3>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              <p className="text-[11px] text-[var(--vf-text-muted)]">
                 Click to jump · Play or regenerate any chunk
               </p>
             </div>
-            <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+            <span className="text-xs font-mono tabular-nums px-2 py-0.5 rounded-md bg-[var(--vf-surface-muted)] text-[var(--vf-text-muted)]">
               {navigatorItems.length}
             </span>
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
             {navigatorItems.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-slate-300 dark:border-slate-700 p-6 text-center text-xs text-slate-500 dark:text-slate-400">
+              <div className="rounded-lg border border-dashed border-[var(--vf-border)] p-6 text-center text-xs text-[var(--vf-text-muted)]">
                 Type or import a script to preview segmented paragraphs and chunks.
               </div>
             ) : (
@@ -1210,27 +1218,27 @@ export function StudioPage() {
                     key={item.id}
                     className={`rounded-lg border p-3 transition cursor-pointer ${
                       isSelected
-                        ? 'border-[#7C5CFF] bg-[#7C5CFF]/10'
-                        : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0B0D12]/60 hover:border-slate-300 dark:hover:border-slate-700'
+                        ? 'border-[var(--vf-accent)] bg-[var(--vf-accent)]/10'
+                        : 'border-[var(--vf-border)] bg-[var(--vf-bg)] hover:border-[var(--vf-text-subtle)]'
                     }`}
                     onClick={() => jumpToChunkInEditor(item.rawText, item.index)}
                   >
                     <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <span className="text-[11px] font-mono font-semibold text-slate-700 dark:text-slate-300">
+                      <span className="text-[11px] font-mono tabular-nums font-semibold text-[var(--vf-text)]">
                         Chunk #{item.index + 1}
                         {item.audioDurationSec !== undefined
                           ? ` · ${item.audioDurationSec.toFixed(1)}s`
                           : ''}
                       </span>
                       <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[10px] font-mono font-semibold uppercase ${
                           isCompleted
-                            ? 'bg-emerald-500/15 text-emerald-500'
+                            ? 'bg-[var(--vf-success)]/15 text-[var(--vf-success)]'
                             : isGenerating
-                              ? 'bg-[#7C5CFF]/20 text-[#7C5CFF]'
+                              ? 'bg-[var(--vf-accent)]/15 text-[var(--vf-accent)]'
                               : isFailed
-                                ? 'bg-rose-500/15 text-rose-500'
-                                : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                                ? 'bg-[var(--vf-danger)]/15 text-[var(--vf-danger)]'
+                                : 'bg-[var(--vf-surface-muted)] text-[var(--vf-text-muted)]'
                         }`}
                       >
                         {isGenerating && <Loader2 className="w-2.5 h-2.5 animate-spin" />}
@@ -1239,24 +1247,26 @@ export function StudioPage() {
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-700 dark:text-slate-300 line-clamp-3">
+                    <p className="text-xs text-[var(--vf-text-muted)] line-clamp-3">
                       {item.rawText}
                     </p>
 
                     {item.errorMessage && (
-                      <p className="text-[11px] text-rose-500 mt-1">{item.errorMessage}</p>
+                      <p className="text-[11px] text-[var(--vf-danger)] mt-1">
+                        {item.errorMessage}
+                      </p>
                     )}
 
                     {usingSavedProjectChunks && (
                       <div
-                        className="flex items-center gap-2 mt-2 pt-2 border-t border-slate-200 dark:border-slate-800/80"
+                        className="flex items-center gap-2 mt-2 pt-2 border-t border-[var(--vf-border-subtle)]"
                         onClick={(e) => e.stopPropagation()}
                       >
                         {isCompleted && (
                           <button
                             type="button"
                             onClick={() => void handlePlaySingleChunk(item)}
-                            className="inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 hover:bg-emerald-500/20 transition"
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium bg-[var(--vf-success)]/12 text-[var(--vf-success)] hover:bg-[var(--vf-success)]/20 transition"
                           >
                             <Play className="w-3 h-3" />
                             Play
@@ -1266,7 +1276,7 @@ export function StudioPage() {
                           type="button"
                           disabled={queueState.isRunning || !voiceCompatible}
                           onClick={() => void handleRegenerateChunk(item.id)}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium bg-[#7C5CFF]/15 text-[#7C5CFF] hover:bg-[#7C5CFF]/25 disabled:opacity-40 transition"
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium bg-[var(--vf-accent)]/15 text-[var(--vf-accent)] hover:bg-[var(--vf-accent)]/25 disabled:opacity-40 transition"
                         >
                           <RefreshCw
                             className={`w-3 h-3 ${
@@ -1284,13 +1294,13 @@ export function StudioPage() {
           </div>
 
           {masteredAudio && rawChunkMap.size > 0 && (
-            <div className="p-3 border-t border-slate-200 dark:border-slate-800">
+            <div className="p-3 border-t border-[var(--vf-border-subtle)]">
               <button
                 type="button"
                 onClick={() => remasterFromMap(activeProject, rawChunkMap)}
-                className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] text-[var(--vf-text)] hover:border-[var(--vf-text-subtle)] transition"
               >
-                <Sparkles className="w-3.5 h-3.5 text-[#7C5CFF]" />
+                <AudioLines className="w-3.5 h-3.5 text-[var(--vf-accent)]" />
                 Play Full Mastered Timeline
               </button>
             </div>

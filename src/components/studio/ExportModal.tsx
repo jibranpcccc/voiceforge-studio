@@ -215,7 +215,11 @@ export function ExportModal({
       })),
       { defaultPauseMs: sentencePauseMs }
     );
-    triggerBrowserDownload(srtResult.srt, 'application/x-subrip;charset=utf-8', `${safeBaseName}.srt`);
+    triggerBrowserDownload(
+      srtResult.srt,
+      'application/x-subrip;charset=utf-8',
+      `${safeBaseName}.srt`
+    );
     setStatusMessage(
       `Exported ${srtResult.cues.length} subtitle cues to ${safeBaseName}.srt.`
     );
@@ -230,20 +234,21 @@ export function ExportModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] shadow-2xl">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] shadow-2xl">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--vf-border-subtle)]">
           <div>
-            <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+            <h2 className="text-base font-semibold text-[var(--vf-text)]">
               Export Narration &amp; Assets
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-[var(--vf-text-muted)]">
               All audio encoding runs 100% locally in your browser with synthetic provenance metadata.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+            className="p-1.5 rounded-md text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:bg-[var(--vf-surface-muted)] transition"
+            aria-label="Close export modal"
           >
             <X className="w-4 h-4" />
           </button>
@@ -253,13 +258,13 @@ export function ExportModal({
           {/* Format, Sample Rate, Channels, Filename */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+              <label className="block text-xs font-medium text-[var(--vf-text-muted)]">
                 Audio Format
               </label>
               <select
                 value={format}
                 onChange={(e) => setFormat(e.target.value as ExportFormat)}
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-[#7C5CFF] focus:outline-none"
+                className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-3 py-2 text-xs text-[var(--vf-text)] focus:border-[var(--vf-accent)] focus:outline-none"
               >
                 {FORMAT_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -270,7 +275,7 @@ export function ExportModal({
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+              <label className="block text-xs font-medium text-[var(--vf-text-muted)]">
                 Sample Rate
               </label>
               <select
@@ -279,7 +284,7 @@ export function ExportModal({
                   const val = e.target.value;
                   setSampleRate(val === 'native' ? 'native' : (Number(val) as 44100 | 48000));
                 }}
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-[#7C5CFF] focus:outline-none"
+                className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-3 py-2 text-xs text-[var(--vf-text)] focus:border-[var(--vf-accent)] focus:outline-none"
               >
                 <option value="native">Native ({nativeRate} Hz default)</option>
                 <option value="44100">44,100 Hz (CD / Podcast)</option>
@@ -288,13 +293,13 @@ export function ExportModal({
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+              <label className="block text-xs font-medium text-[var(--vf-text-muted)]">
                 Channels
               </label>
               <select
                 value={channels}
                 onChange={(e) => setChannels(e.target.value as 'mono' | 'stereo')}
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-[#7C5CFF] focus:outline-none"
+                className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-3 py-2 text-xs text-[var(--vf-text)] focus:border-[var(--vf-accent)] focus:outline-none"
               >
                 <option value="mono">Mono (Voice Standard)</option>
                 <option value="stereo">Dual-Mono Stereo</option>
@@ -302,24 +307,24 @@ export function ExportModal({
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+              <label className="block text-xs font-medium text-[var(--vf-text-muted)]">
                 Base Filename
               </label>
               <input
                 type="text"
                 value={filename}
                 onChange={(e) => setFilename(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-[#7C5CFF] focus:outline-none"
+                className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-3 py-2 text-xs font-mono text-[var(--vf-text)] focus:border-[var(--vf-accent)] focus:outline-none"
               />
             </div>
           </div>
 
           {/* Honest Upsampling Disclosure */}
-          <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 flex items-start gap-2.5 text-xs text-amber-800 dark:text-amber-200">
-            <Info className="w-4 h-4 shrink-0 mt-0.5 text-amber-500" />
+          <div className="rounded-md border border-[var(--vf-warning)]/25 bg-[var(--vf-warning)]/10 p-3 flex items-start gap-2.5 text-xs text-[var(--vf-text)]">
+            <Info className="w-4 h-4 shrink-0 mt-0.5 text-[var(--vf-warning)]" />
             <div className="space-y-1">
               <p className="font-medium">Sample-Rate Disclosure</p>
-              <p className="text-[11px] opacity-90">
+              <p className="text-[11px] text-[var(--vf-text-muted)]">
                 {resampleNote ??
                   `Engines synthesize natively at ${nativeRate} Hz. Selecting 44,100 Hz or 48,000 Hz resamples for DAW/video compatibility only — upsampling does NOT add original audio detail above ${Math.floor(nativeRate / 2)} Hz.`}
               </p>
@@ -332,24 +337,24 @@ export function ExportModal({
               type="button"
               disabled={!masteredAudio || busy}
               onClick={handleDownloadFull}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#7C5CFF] hover:bg-[#6A48F5] text-white py-2.5 px-4 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition"
+              className="w-full flex items-center justify-center gap-2 rounded-md bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] text-white py-2.5 px-4 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
               <Download className="w-4 h-4" />
               Download Full Mastered Narration
             </button>
 
             {/* Individual Paragraph Download */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3 space-y-2.5">
+            <div className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] p-3 space-y-2.5">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                <span className="text-xs font-semibold text-[var(--vf-text)]">
                   Individual Paragraph Export
                 </span>
-                <label className="inline-flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 cursor-pointer">
+                <label className="inline-flex items-center gap-1.5 text-[11px] text-[var(--vf-text-muted)] cursor-pointer">
                   <input
                     type="checkbox"
                     checked={applyMasteringOnSegment}
                     onChange={(e) => setApplyMasteringOnSegment(e.target.checked)}
-                    className="accent-[#7C5CFF]"
+                    className="accent-[var(--vf-accent)]"
                   />
                   Apply mastering DSP to segments
                 </label>
@@ -359,7 +364,7 @@ export function ExportModal({
                   value={activeSelectedChunkId}
                   disabled={completedChunks.length === 0}
                   onChange={(e) => setSelectedChunkId(e.target.value)}
-                  className="flex-1 min-w-0 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] px-2.5 py-1.5 text-xs text-slate-900 dark:text-slate-100"
+                  className="flex-1 min-w-0 rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-2.5 py-1.5 text-xs text-[var(--vf-text)] focus:border-[var(--vf-accent)] focus:outline-none"
                 >
                   {completedChunks.length === 0 ? (
                     <option value="">No completed paragraphs yet</option>
@@ -376,7 +381,7 @@ export function ExportModal({
                   type="button"
                   disabled={completedChunks.length === 0 || busy}
                   onClick={handleDownloadSingleChunk}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 disabled:opacity-40 transition"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-[var(--vf-border)] bg-[var(--vf-surface)] hover:bg-[var(--vf-surface-muted)] text-[var(--vf-text)] disabled:opacity-40 transition"
                 >
                   <Download className="w-3.5 h-3.5" />
                   Download Paragraph
@@ -386,53 +391,53 @@ export function ExportModal({
 
             {/* ZIP, SRT, Project JSON */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3 space-y-2">
+              <div className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] p-3 space-y-2">
                 <button
                   type="button"
                   disabled={completedChunks.length === 0 || busy}
                   onClick={handleDownloadZip}
-                  className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 py-2 px-3 text-xs font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 transition"
+                  className="w-full inline-flex items-center justify-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface)] py-2 px-3 text-xs font-medium text-[var(--vf-text)] hover:bg-[var(--vf-surface-muted)] disabled:opacity-40 transition"
                 >
-                  <FileArchive className="w-3.5 h-3.5 text-[#7C5CFF]" />
+                  <FileArchive className="w-3.5 h-3.5 text-[var(--vf-accent)]" />
                   Multi-Segment ZIP
                 </button>
-                <label className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 cursor-pointer">
+                <label className="flex items-center gap-1.5 text-[11px] text-[var(--vf-text-muted)] cursor-pointer">
                   <input
                     type="checkbox"
                     checked={includeSrtInZip}
                     onChange={(e) => setIncludeSrtInZip(e.target.checked)}
-                    className="accent-[#7C5CFF]"
+                    className="accent-[var(--vf-accent)]"
                   />
                   Include SRT &amp; manifest
                 </label>
               </div>
 
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3 space-y-2">
+              <div className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] p-3 space-y-2">
                 <button
                   type="button"
                   disabled={completedChunks.length === 0 || busy}
                   onClick={handleDownloadSrt}
-                  className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 py-2 px-3 text-xs font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 transition"
+                  className="w-full inline-flex items-center justify-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface)] py-2 px-3 text-xs font-medium text-[var(--vf-text)] hover:bg-[var(--vf-surface-muted)] disabled:opacity-40 transition"
                 >
-                  <FileText className="w-3.5 h-3.5 text-[#7C5CFF]" />
+                  <FileText className="w-3.5 h-3.5 text-[var(--vf-accent)]" />
                   Export SRT Subtitles
                 </button>
-                <p className="text-[10px] leading-tight text-slate-500 dark:text-slate-400">
+                <p className="text-[10px] leading-tight text-[var(--vf-text-muted)]">
                   {SRT_BOUNDARY_NOTE}
                 </p>
               </div>
 
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3 space-y-2">
+              <div className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] p-3 space-y-2">
                 <button
                   type="button"
                   disabled={!project}
                   onClick={handleExportProjectJson}
-                  className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 py-2 px-3 text-xs font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 transition"
+                  className="w-full inline-flex items-center justify-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface)] py-2 px-3 text-xs font-medium text-[var(--vf-text)] hover:bg-[var(--vf-surface-muted)] disabled:opacity-40 transition"
                 >
-                  <FileCode2 className="w-3.5 h-3.5 text-[#7C5CFF]" />
+                  <FileCode2 className="w-3.5 h-3.5 text-[var(--vf-accent)]" />
                   Export Project JSON
                 </button>
-                <p className="text-[10px] leading-tight text-slate-500 dark:text-slate-400">
+                <p className="text-[10px] leading-tight text-[var(--vf-text-muted)]">
                   Portable project settings, script, and pronunciation rules.
                 </p>
               </div>
@@ -440,12 +445,12 @@ export function ExportModal({
           </div>
 
           {statusMessage && (
-            <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700 dark:text-emerald-300">
+            <div className="rounded-md border border-[var(--vf-success)]/25 bg-[var(--vf-success)]/10 px-3 py-2 text-xs text-[var(--vf-success)]">
               {statusMessage}
             </div>
           )}
           {error && (
-            <div className="rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-xs text-rose-700 dark:text-rose-300">
+            <div className="rounded-md border border-[var(--vf-danger)]/25 bg-[var(--vf-danger)]/10 px-3 py-2 text-xs text-[var(--vf-danger)]">
               {error}
             </div>
           )}
