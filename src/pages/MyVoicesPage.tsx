@@ -307,16 +307,16 @@ export function MyVoicesPage() {
   }, [deleteTarget, deleteVoiceProfile]);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-10">
+    <div className="max-w-6xl mx-auto space-y-5 pb-10">
       {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4 pb-3 border-b border-[var(--vf-border-subtle)]">
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <h1 className="text-xl font-semibold tracking-tight text-[var(--vf-text)]">
             My Voices
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
+          <p className="text-xs text-[var(--vf-text-muted)]">
             Manage locally encoded voice profiles, default narrator selection, and portable{' '}
-            <code className="font-mono text-xs">.vfvoice.json</code> bundles.
+            <code className="font-mono">.vfvoice.json</code> bundles.
           </p>
         </div>
 
@@ -331,7 +331,7 @@ export function MyVoicesPage() {
           <button
             type="button"
             onClick={() => importInputRef.current?.click()}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#121622] px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-3 py-1.5 text-xs font-semibold text-[var(--vf-text)] hover:border-[var(--vf-accent)]/50 transition-colors cursor-pointer"
           >
             <Upload className="h-3.5 w-3.5" />
             Import .vfvoice.json
@@ -342,7 +342,7 @@ export function MyVoicesPage() {
             onClick={() => {
               window.location.hash = '#/clone';
             }}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#7C5CFF] hover:bg-[#6a48f5] px-4 py-2 text-xs font-semibold text-white"
+            className="inline-flex items-center gap-1.5 rounded-md bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] px-3.5 py-1.5 text-xs font-semibold text-white transition-colors cursor-pointer"
           >
             <Plus className="h-3.5 w-3.5" />
             Clone New Voice
@@ -354,17 +354,17 @@ export function MyVoicesPage() {
       {alertBanner && (
         <div
           role={alertBanner.kind === 'error' ? 'alert' : 'status'}
-          className={`flex items-start justify-between gap-3 rounded-xl border p-3.5 text-xs ${
+          className={`flex items-start justify-between gap-3 rounded-lg border p-3.5 text-xs ${
             alertBanner.kind === 'error'
-              ? 'border-rose-500/35 bg-rose-500/10 text-rose-700 dark:text-rose-200'
-              : 'border-emerald-500/35 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200'
+              ? 'border-[var(--vf-danger)]/35 bg-[var(--vf-danger)]/10 text-[var(--vf-danger)]'
+              : 'border-[var(--vf-success)]/35 bg-[var(--vf-success)]/10 text-[var(--vf-success)]'
           }`}
         >
           <div className="flex items-start gap-2">
             {alertBanner.kind === 'error' ? (
-              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-rose-500" />
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             ) : (
-              <Check className="h-4 w-4 shrink-0 mt-0.5 text-emerald-500" />
+              <Check className="h-4 w-4 shrink-0 mt-0.5" />
             )}
             <span>{alertBanner.message}</span>
           </div>
@@ -372,7 +372,7 @@ export function MyVoicesPage() {
             type="button"
             onClick={() => setAlertBanner(null)}
             aria-label="Dismiss notification"
-            className="opacity-70 hover:opacity-100"
+            className="opacity-70 hover:opacity-100 cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -382,17 +382,17 @@ export function MyVoicesPage() {
       {/* Search & Filter Toolbar */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--vf-text-subtle)]" />
           <input
             type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by voice name, tag, language, or description..."
-            className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#121622] pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#7C5CFF]"
+            className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface)] pl-9 pr-3 py-2 text-xs text-[var(--vf-text)] placeholder:text-[var(--vf-text-subtle)] focus:outline-none focus:border-[var(--vf-accent)] focus:ring-1 focus:ring-[var(--vf-accent)]/40"
           />
         </div>
 
-        <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] p-0.5 self-start">
+        <div className="inline-flex rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface)] p-0.5 self-start">
           {[
             { id: 'all', label: 'All Engines' },
             { id: 'pocket-tts', label: 'Pocket TTS' },
@@ -402,10 +402,10 @@ export function MyVoicesPage() {
               key={opt.id}
               type="button"
               onClick={() => setEngineFilter(opt.id)}
-              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`rounded-sm px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
                 engineFilter === opt.id
-                  ? 'bg-[#7C5CFF] text-white'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-[var(--vf-accent)] text-white'
+                  : 'text-[var(--vf-text-muted)] hover:text-[var(--vf-text)]'
               }`}
             >
               {opt.label}
@@ -416,17 +416,17 @@ export function MyVoicesPage() {
 
       {/* Voice List */}
       {loading && voices.length === 0 ? (
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] p-10 text-center text-sm text-slate-500">
+        <div className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-10 text-center text-xs font-mono text-[var(--vf-text-muted)]">
           Loading saved voice profiles from IndexedDB...
         </div>
       ) : filteredVoices.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-800 bg-white/50 dark:bg-[#121622]/60 p-10 text-center space-y-3">
-          <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+        <div className="rounded-lg border border-dashed border-[var(--vf-border)] bg-[var(--vf-surface)] p-10 text-center space-y-3">
+          <p className="text-sm font-medium text-[var(--vf-text)]">
             {voices.length === 0
               ? 'No voice profiles saved yet'
               : 'No voice profiles match your current search or filter'}
           </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-[var(--vf-text-muted)]">
             {voices.length === 0
               ? 'Clone an authorized voice locally or import a verified .vfvoice.json bundle.'
               : 'Try clearing your search query or switching the engine filter.'}
@@ -437,7 +437,7 @@ export function MyVoicesPage() {
               onClick={() => {
                 window.location.hash = '#/clone';
               }}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#7C5CFF] hover:bg-[#6a48f5] px-4 py-2 text-xs font-semibold text-white"
+              className="inline-flex items-center gap-1.5 rounded-md bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] px-4 py-2 text-xs font-semibold text-white cursor-pointer"
             >
               <Plus className="h-3.5 w-3.5" />
               Clone Your First Voice
@@ -455,10 +455,10 @@ export function MyVoicesPage() {
             return (
               <article
                 key={voice.id}
-                className={`rounded-xl border bg-white dark:bg-[#121622] p-4 space-y-3.5 transition-colors ${
+                className={`rounded-lg border bg-[var(--vf-surface)] p-4 space-y-3.5 transition-colors ${
                   isDefault
-                    ? 'border-[#7C5CFF]/60 ring-1 ring-[#7C5CFF]/25'
-                    : 'border-slate-200 dark:border-slate-800'
+                    ? 'border-[var(--vf-accent)]'
+                    : 'border-[var(--vf-border)]'
                 }`}
               >
                 {/* Top Row: Name + Default Narrator Star */}
@@ -475,13 +475,13 @@ export function MyVoicesPage() {
                             if (e.key === 'Escape') setRenamingId(null);
                           }}
                           autoFocus
-                          className="flex-1 rounded-md border border-[#7C5CFF] bg-slate-50 dark:bg-[#0B0D12] px-2.5 py-1 text-sm font-semibold text-slate-900 dark:text-slate-100 focus:outline-none"
+                          className="flex-1 rounded-md border border-[var(--vf-accent)] bg-[var(--vf-bg)] px-2.5 py-1 text-sm font-semibold text-[var(--vf-text)] focus:outline-none"
                         />
                         <button
                           type="button"
                           onClick={() => void handleCommitRename(voice.id)}
                           aria-label="Save name"
-                          className="rounded-md bg-emerald-600 hover:bg-emerald-500 p-1.5 text-white"
+                          className="rounded-md bg-emerald-600 hover:bg-emerald-500 p-1.5 text-white cursor-pointer"
                         >
                           <Check className="h-3.5 w-3.5" />
                         </button>
@@ -489,18 +489,18 @@ export function MyVoicesPage() {
                           type="button"
                           onClick={() => setRenamingId(null)}
                           aria-label="Cancel rename"
-                          className="rounded-md border border-slate-300 dark:border-slate-700 p-1.5 text-slate-500"
+                          className="rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] p-1.5 text-[var(--vf-text-muted)] cursor-pointer"
                         >
                           <X className="h-3.5 w-3.5" />
                         </button>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <h2 className="truncate text-base font-semibold text-slate-900 dark:text-slate-100">
+                        <h2 className="truncate text-base font-semibold text-[var(--vf-text)]">
                           {voice.name}
                         </h2>
                         {isDefault && (
-                          <span className="shrink-0 rounded-full bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-300">
+                          <span className="shrink-0 rounded-sm bg-[var(--vf-warning)]/15 border border-[var(--vf-warning)]/35 px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider font-semibold text-[var(--vf-warning)]">
                             Default Narrator
                           </span>
                         )}
@@ -508,7 +508,7 @@ export function MyVoicesPage() {
                     )}
 
                     {voice.description && (
-                      <p className="mt-1 text-xs text-slate-600 dark:text-slate-400 line-clamp-2">
+                      <p className="mt-1 text-xs text-[var(--vf-text-muted)] line-clamp-2">
                         {voice.description}
                       </p>
                     )}
@@ -519,46 +519,46 @@ export function MyVoicesPage() {
                     onClick={() => void setDefaultNarrator(voice.id)}
                     title={isDefault ? 'Default narrator' : 'Set as default narrator'}
                     aria-label={isDefault ? 'Default narrator' : 'Set as default narrator'}
-                    className={`rounded-lg border p-2 transition-colors ${
+                    className={`rounded-md border p-2 transition-colors cursor-pointer ${
                       isDefault
-                        ? 'border-amber-500/40 bg-amber-500/15 text-amber-400'
-                        : 'border-slate-200 dark:border-slate-800 text-slate-400 hover:text-amber-400 hover:border-amber-500/30'
+                        ? 'border-[var(--vf-warning)]/45 bg-[var(--vf-warning)]/15 text-[var(--vf-warning)]'
+                        : 'border-[var(--vf-border)] bg-[var(--vf-bg)] text-[var(--vf-text-subtle)] hover:text-[var(--vf-warning)] hover:border-[var(--vf-warning)]/40'
                     }`}
                   >
                     <Star className={`h-4 w-4 ${isDefault ? 'fill-current' : ''}`} />
                   </button>
                 </div>
 
-                {/* Engine Badges, Revision, Language, Duration & Quality Score */}
+                {/* Engine Specs, Revision, Language, Duration & Quality Score */}
                 <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
                   {payloads.map((payload) => (
                     <span
                       key={`${payload.engineId}::${payload.modelRevision}`}
                       title={`Pinned revision: ${payload.modelRevision}`}
-                      className="inline-flex items-center gap-1 rounded-md bg-[#7C5CFF]/15 border border-[#7C5CFF]/30 px-2 py-0.5 font-medium text-[#7C5CFF]"
+                      className="inline-flex items-center gap-1 rounded-sm bg-[var(--vf-accent-soft)] border border-[var(--vf-accent)]/35 px-2 py-0.5 font-medium text-[var(--vf-accent)]"
                     >
                       {formatEngineBadge(payload.engineId)}
-                      <code className="font-mono text-[10px] opacity-80">
+                      <code className="font-mono text-[10px] opacity-85">
                         @{payload.modelRevision.slice(0, 7)}
                       </code>
                     </span>
                   ))}
 
-                  <span className="rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 font-mono uppercase text-slate-700 dark:text-slate-300">
+                  <span className="rounded-sm border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] px-2 py-0.5 font-mono uppercase text-[var(--vf-text-muted)]">
                     {voice.language}
                   </span>
 
-                  <span className="rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 font-mono text-slate-700 dark:text-slate-300">
+                  <span className="rounded-sm border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] px-2 py-0.5 font-mono tabular-nums text-[var(--vf-text-muted)]">
                     Ref {voice.referenceClip.durationSec.toFixed(1)}s
                   </span>
 
                   <span
-                    className={`rounded-md px-2 py-0.5 font-mono font-semibold ${
+                    className={`rounded-sm border px-2 py-0.5 font-mono tabular-nums font-semibold ${
                       voice.qualityAnalysis.overallScore >= 80
-                        ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300'
+                        ? 'border-[var(--vf-success)]/35 bg-[var(--vf-success)]/15 text-[var(--vf-success)]'
                         : voice.qualityAnalysis.overallScore >= 55
-                          ? 'bg-amber-500/15 text-amber-600 dark:text-amber-300'
-                          : 'bg-rose-500/15 text-rose-600 dark:text-rose-300'
+                          ? 'border-[var(--vf-warning)]/35 bg-[var(--vf-warning)]/15 text-[var(--vf-warning)]'
+                          : 'border-[var(--vf-danger)]/35 bg-[var(--vf-danger)]/15 text-[var(--vf-danger)]'
                     }`}
                   >
                     Quality {voice.qualityAnalysis.overallScore}/100
@@ -566,7 +566,7 @@ export function MyVoicesPage() {
 
                   <span
                     title={voice.authorizedUse.attestationText}
-                    className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-0.5 text-emerald-700 dark:text-emerald-300"
+                    className="inline-flex items-center gap-1 rounded-sm border border-[var(--vf-success)]/30 bg-[var(--vf-success)]/10 px-2 py-0.5 text-[var(--vf-success)]"
                   >
                     <ShieldCheck className="h-3 w-3" />
                     {voice.authorizedUse.sourceBasis}
@@ -579,7 +579,7 @@ export function MyVoicesPage() {
                     {voice.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="rounded-full bg-slate-100 dark:bg-[#0B0D12] border border-slate-200 dark:border-slate-800 px-2 py-0.5 text-[10px] text-slate-600 dark:text-slate-400"
+                        className="rounded-sm bg-[var(--vf-bg)] border border-[var(--vf-border-subtle)] px-2 py-0.5 font-mono text-[10px] text-[var(--vf-text-muted)]"
                       >
                         #{tag}
                       </span>
@@ -592,9 +592,9 @@ export function MyVoicesPage() {
                   <button
                     type="button"
                     onClick={() => void handlePlayStoredAudio(voice, 'reference')}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-700 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-2.5 py-1.5 text-xs font-medium text-[var(--vf-text)] hover:border-[var(--vf-accent)]/50 transition-colors cursor-pointer"
                   >
-                    <Volume2 className="h-3.5 w-3.5 text-[#7C5CFF]" />
+                    <Volume2 className="h-3.5 w-3.5 text-[var(--vf-accent)]" />
                     {isPreviewOpen && activePreview?.label === 'Reference Audio'
                       ? 'Hide Reference Player'
                       : 'Play Reference'}
@@ -603,9 +603,9 @@ export function MyVoicesPage() {
                   <button
                     type="button"
                     onClick={() => void handlePlayStoredAudio(voice, 'synth')}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-700 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-2.5 py-1.5 text-xs font-medium text-[var(--vf-text)] hover:border-[var(--vf-success)]/50 transition-colors cursor-pointer"
                   >
-                    <Volume2 className="h-3.5 w-3.5 text-emerald-500" />
+                    <Volume2 className="h-3.5 w-3.5 text-[var(--vf-success)]" />
                     {isPreviewOpen && activePreview?.label === 'Synthesized Preview'
                       ? 'Hide Preview Player'
                       : 'Play Synth Preview'}
@@ -613,7 +613,7 @@ export function MyVoicesPage() {
                 </div>
 
                 {previewNotice?.voiceId === voice.id && (
-                  <p className="text-[11px] text-amber-600 dark:text-amber-300">
+                  <p className="text-[11px] text-[var(--vf-warning)]">
                     {previewNotice.message}
                   </p>
                 )}
@@ -628,13 +628,13 @@ export function MyVoicesPage() {
                 )}
 
                 {/* Card Footer Actions */}
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200/80 dark:border-slate-800">
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-[var(--vf-border-subtle)]">
                   <div className="flex flex-wrap items-center gap-1">
                     <button
                       type="button"
                       onClick={() => handleStartRename(voice)}
                       title="Rename voice"
-                      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:bg-[var(--vf-surface-elevated)] cursor-pointer"
                     >
                       <Edit3 className="h-3.5 w-3.5" />
                       Rename
@@ -644,7 +644,7 @@ export function MyVoicesPage() {
                       type="button"
                       onClick={() => void handleDuplicate(voice)}
                       title="Duplicate voice"
-                      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:bg-[var(--vf-surface-elevated)] cursor-pointer"
                     >
                       <Copy className="h-3.5 w-3.5" />
                       Duplicate
@@ -654,7 +654,7 @@ export function MyVoicesPage() {
                       type="button"
                       onClick={() => void handleExport(voice)}
                       title="Export .vfvoice.json"
-                      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:bg-[var(--vf-surface-elevated)] cursor-pointer"
                     >
                       <Download className="h-3.5 w-3.5" />
                       Export
@@ -664,7 +664,7 @@ export function MyVoicesPage() {
                       type="button"
                       onClick={() => setDeleteTarget(voice)}
                       title="Delete voice permanently"
-                      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-500/10"
+                      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-[var(--vf-danger)] hover:bg-[var(--vf-danger)]/10 cursor-pointer"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                       Delete
@@ -674,7 +674,7 @@ export function MyVoicesPage() {
                   <button
                     type="button"
                     onClick={() => handleUseInStudio(voice)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-[#7C5CFF] hover:bg-[#6a48f5] px-3 py-1.5 text-xs font-semibold text-white"
+                    className="inline-flex items-center gap-1.5 rounded-md bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] px-3 py-1.5 text-xs font-semibold text-white transition-colors cursor-pointer"
                   >
                     Use in Studio
                     <ArrowRight className="h-3.5 w-3.5" />
@@ -694,19 +694,19 @@ export function MyVoicesPage() {
           aria-labelledby="delete-voice-title"
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
         >
-          <div className="max-w-md w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] p-5 shadow-2xl space-y-4">
+          <div className="max-w-md w-full rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-5 shadow-2xl space-y-4">
             <div className="flex items-start gap-3">
-              <div className="h-9 w-9 rounded-lg bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-500 shrink-0">
+              <div className="h-9 w-9 rounded-md bg-[var(--vf-danger)]/15 border border-[var(--vf-danger)]/35 flex items-center justify-center text-[var(--vf-danger)] shrink-0">
                 <Trash2 className="h-4 w-4" />
               </div>
               <div className="space-y-1">
                 <h2
                   id="delete-voice-title"
-                  className="text-base font-semibold text-slate-900 dark:text-slate-100"
+                  className="text-base font-semibold text-[var(--vf-text)]"
                 >
                   Delete &ldquo;{deleteTarget.name}&rdquo;?
                 </h2>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                <p className="text-xs text-[var(--vf-text-muted)] leading-relaxed">
                   This permanently deletes the voice profile, its encoded conditioning tensors,
                   and its locally stored reference/preview audio from IndexedDB. This action
                   cannot be undone.
@@ -714,18 +714,18 @@ export function MyVoicesPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--vf-border-subtle)]">
               <button
                 type="button"
                 onClick={() => setDeleteTarget(null)}
-                className="rounded-lg border border-slate-300 dark:border-slate-700 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-3.5 py-2 text-xs font-semibold text-[var(--vf-text)] hover:border-[var(--vf-text-subtle)] cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={() => void handleConfirmDelete()}
-                className="rounded-lg bg-rose-600 hover:bg-rose-500 px-3.5 py-2 text-xs font-semibold text-white"
+                className="rounded-md bg-rose-600 hover:bg-rose-500 px-3.5 py-2 text-xs font-semibold text-white cursor-pointer"
               >
                 Delete Permanently
               </button>

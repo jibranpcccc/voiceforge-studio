@@ -88,13 +88,13 @@ export function SettingsPage() {
   };
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-4xl mx-auto space-y-5 pb-10">
       {/* Execution Mode */}
-      <section className="rounded-2xl border border-[var(--vf-border)] bg-[var(--vf-surface)] p-5 space-y-4">
-        <div className="flex items-center justify-between gap-2">
+      <section className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-5 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-[var(--vf-border-subtle)]">
           <div className="flex items-center gap-2">
             <Cpu className="h-4 w-4 text-[var(--vf-accent)]" />
-            <h2 className="text-sm font-semibold">Execution Mode</h2>
+            <h2 className="text-sm font-semibold text-[var(--vf-text)]">Execution Mode</h2>
           </div>
           {hardwareCapabilities && (
             <span className="text-xs text-[var(--vf-text-muted)]">
@@ -117,10 +117,10 @@ export function SettingsPage() {
                   setExecutionMode(opt.mode);
                   toast.info('Execution mode updated', opt.title);
                 }}
-                className={`text-left rounded-xl border p-3.5 transition-colors cursor-pointer ${
+                className={`text-left rounded-md border p-3.5 transition-colors cursor-pointer ${
                   active
                     ? 'border-[var(--vf-accent)] bg-[var(--vf-accent-soft)]'
-                    : 'border-[var(--vf-border-subtle)] bg-[var(--vf-surface-elevated)] hover:border-[var(--vf-accent)]/40'
+                    : 'border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] hover:border-[var(--vf-accent)]/40'
                 }`}
               >
                 <div className="text-xs font-semibold text-[var(--vf-text)]">{opt.title}</div>
@@ -134,7 +134,7 @@ export function SettingsPage() {
 
         <div className="border-t border-[var(--vf-border-subtle)] pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <label htmlFor="parallel-workers-select" className="block text-xs font-semibold">
+            <label htmlFor="parallel-workers-select" className="block text-xs font-semibold text-[var(--vf-text)]">
               Parallel Workers (Long-Form Pocket TTS Speed)
             </label>
             <p className="text-[11px] text-[var(--vf-text-muted)] mt-0.5">
@@ -145,7 +145,7 @@ export function SettingsPage() {
             id="parallel-workers-select"
             value={parallelWorkers}
             onChange={(e) => setParallelWorkers(Number(e.target.value))}
-            className="rounded-xl border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-3 py-2 text-xs text-[var(--vf-text)] focus:outline-none focus:border-[var(--vf-accent)] shrink-0"
+            className="rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-3 py-2 text-xs font-mono text-[var(--vf-text)] focus:outline-none focus:border-[var(--vf-accent)] shrink-0"
           >
             <option value={0}>Auto (Recommended)</option>
             <option value={1}>1 Worker (Lowest RAM)</option>
@@ -157,19 +157,19 @@ export function SettingsPage() {
       </section>
 
       {/* Appearance & Default Export Settings */}
-      <section className="rounded-2xl border border-[var(--vf-border)] bg-[var(--vf-surface)] p-5 space-y-5">
+      <section className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-5 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-sm font-semibold">Appearance Theme</h2>
+            <h2 className="text-sm font-semibold text-[var(--vf-text)]">Appearance Theme</h2>
             <p className="text-xs text-[var(--vf-text-muted)]">
-              Switch between Dark Studio charcoal/navy and Light Studio workspace themes.
+              Switch between Dark Console and Light Console workspace themes.
             </p>
           </div>
-          <div className="inline-flex rounded-xl border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] p-1">
+          <div className="inline-flex rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] p-0.5 self-start">
             <button
               type="button"
               onClick={() => setTheme('dark')}
-              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors ${
+              className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors ${
                 theme === 'dark'
                   ? 'bg-[var(--vf-accent)] text-white'
                   : 'text-[var(--vf-text-muted)] hover:text-[var(--vf-text)]'
@@ -181,7 +181,7 @@ export function SettingsPage() {
             <button
               type="button"
               onClick={() => setTheme('light')}
-              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors ${
+              className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors ${
                 theme === 'light'
                   ? 'bg-[var(--vf-accent)] text-white'
                   : 'text-[var(--vf-text-muted)] hover:text-[var(--vf-text)]'
@@ -195,14 +195,17 @@ export function SettingsPage() {
 
         <div className="border-t border-[var(--vf-border-subtle)] pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label htmlFor="default-export-format" className="block text-xs font-medium">
+            <label
+              htmlFor="default-export-format"
+              className="block text-[11px] font-mono uppercase tracking-wider font-medium text-[var(--vf-text-muted)]"
+            >
               Default Export Format
             </label>
             <select
               id="default-export-format"
               value={defaultExportFormat}
               onChange={(e) => setDefaultExportFormat(e.target.value as ExportFormat)}
-              className="w-full rounded-xl border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-3 py-2 text-xs text-[var(--vf-text)] focus:outline-none focus:border-[var(--vf-accent)]"
+              className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-3 py-2 text-xs text-[var(--vf-text)] focus:outline-none focus:border-[var(--vf-accent)]"
             >
               <option value="wav16">WAV 16-bit PCM (Lossless)</option>
               <option value="wav24">WAV 24-bit PCM (Master Lossless)</option>
@@ -214,7 +217,10 @@ export function SettingsPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="default-export-sr" className="block text-xs font-medium">
+            <label
+              htmlFor="default-export-sr"
+              className="block text-[11px] font-mono uppercase tracking-wider font-medium text-[var(--vf-text-muted)]"
+            >
               Default Export Sample Rate
             </label>
             <select
@@ -226,7 +232,7 @@ export function SettingsPage() {
                   raw === '44100' ? 44100 : raw === '48000' ? 48000 : 'native';
                 setDefaultExportSampleRate(val);
               }}
-              className="w-full rounded-xl border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-3 py-2 text-xs text-[var(--vf-text)] focus:outline-none focus:border-[var(--vf-accent)]"
+              className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-3 py-2 text-xs text-[var(--vf-text)] focus:outline-none focus:border-[var(--vf-accent)]"
             >
               <option value="native">Native Engine Rate (24,000 Hz)</option>
               <option value="44100">44,100 Hz (Resampled)</option>
@@ -240,10 +246,10 @@ export function SettingsPage() {
       </section>
 
       {/* Self-Hosted Model Mirror URL */}
-      <section className="rounded-2xl border border-[var(--vf-border)] bg-[var(--vf-surface)] p-5 space-y-3">
-        <div className="flex items-center gap-2">
+      <section className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-5 space-y-3">
+        <div className="flex items-center gap-2 pb-2 border-b border-[var(--vf-border-subtle)]">
           <Globe className="h-4 w-4 text-[var(--vf-accent)]" />
-          <h2 className="text-sm font-semibold">Self-Hosted Model Base URL</h2>
+          <h2 className="text-sm font-semibold text-[var(--vf-text)]">Self-Hosted Model Base URL</h2>
         </div>
         <p className="text-xs text-[var(--vf-text-muted)]">
           Leave empty to download directly from commit-pinned Hugging Face repositories (GitHub Pages mode). For self-hosted cPanel or static mirrors, enter a base path such as{' '}
@@ -258,12 +264,12 @@ export function SettingsPage() {
             onChange={(e) => setBaseUrlDraft(e.target.value)}
             placeholder="Empty = Pinned Hugging Face URLs (e.g. ./models/{engineId}/)"
             aria-label="Self-hosted model base URL"
-            className="flex-1 rounded-xl border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-3 py-2 text-xs font-mono text-[var(--vf-text)] placeholder:text-[var(--vf-text-subtle)] focus:outline-none focus:border-[var(--vf-accent)]"
+            className="flex-1 rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-3 py-2 text-xs font-mono text-[var(--vf-text)] placeholder:text-[var(--vf-text-subtle)] focus:outline-none focus:border-[var(--vf-accent)]"
           />
           <button
             type="button"
             onClick={() => handleSaveBaseUrl(baseUrlDraft)}
-            className="rounded-xl bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] text-white px-4 py-2 text-xs font-semibold cursor-pointer shrink-0"
+            className="rounded-md bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] text-white px-4 py-2 text-xs font-semibold cursor-pointer shrink-0 transition-colors"
           >
             Save URL
           </button>
@@ -273,21 +279,21 @@ export function SettingsPage() {
           <button
             type="button"
             onClick={() => handleSaveBaseUrl('')}
-            className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-2.5 py-1 hover:border-[var(--vf-accent)]/40 cursor-pointer"
+            className="rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-2.5 py-1 text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:border-[var(--vf-accent)]/50 cursor-pointer transition-colors"
           >
             Use Pinned Hugging Face
           </button>
           <button
             type="button"
             onClick={() => handleSaveBaseUrl('./models/{engineId}/')}
-            className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-2.5 py-1 hover:border-[var(--vf-accent)]/40 cursor-pointer"
+            className="rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-2.5 py-1 font-mono text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:border-[var(--vf-accent)]/50 cursor-pointer transition-colors"
           >
             Use Self-Hosted ./models/{'{engineId}'}/
           </button>
           <button
             type="button"
             onClick={() => handleSaveBaseUrl('./models/')}
-            className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-2.5 py-1 hover:border-[var(--vf-accent)]/40 cursor-pointer"
+            className="rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-2.5 py-1 font-mono text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:border-[var(--vf-accent)]/50 cursor-pointer transition-colors"
           >
             Use ./models/
           </button>
@@ -295,13 +301,15 @@ export function SettingsPage() {
       </section>
 
       {/* Privacy, Consent & License Disclosures */}
-      <section className="rounded-2xl border border-[var(--vf-border)] bg-[var(--vf-surface)] p-5 space-y-3 text-xs">
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="h-4 w-4 text-emerald-400" />
-          <h2 className="text-sm font-semibold">Privacy, Authorized-Use &amp; License Disclosures</h2>
+      <section className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-5 space-y-3 text-xs">
+        <div className="flex items-center gap-2 pb-2 border-b border-[var(--vf-border-subtle)]">
+          <ShieldCheck className="h-4 w-4 text-[var(--vf-success)]" />
+          <h2 className="text-sm font-semibold text-[var(--vf-text)]">
+            Privacy, Authorized-Use &amp; License Disclosures
+          </h2>
         </div>
 
-        <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/5 p-3.5 space-y-1.5 text-[var(--vf-text-muted)]">
+        <div className="rounded-md border border-[var(--vf-success)]/30 bg-[var(--vf-success)]/5 p-3.5 space-y-1.5 text-[var(--vf-text-muted)]">
           <p className="font-medium text-[var(--vf-text)]">
             100% Client-Side Local Processing
           </p>
@@ -310,8 +318,8 @@ export function SettingsPage() {
           </p>
         </div>
 
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3.5 space-y-1.5 text-[var(--vf-text-muted)]">
-          <p className="font-medium text-amber-400 flex items-center gap-1.5">
+        <div className="rounded-md border border-[var(--vf-warning)]/35 bg-[var(--vf-warning)]/5 p-3.5 space-y-1.5 text-[var(--vf-text-muted)]">
+          <p className="font-medium text-[var(--vf-warning)] flex items-center gap-1.5">
             <ShieldAlert className="h-4 w-4 shrink-0" />
             <span>Self-Attested Authorization Notice</span>
           </p>
@@ -326,15 +334,15 @@ export function SettingsPage() {
 
         <div className="text-[11px] text-[var(--vf-text-muted)] space-y-1 pt-1">
           <p>
-            <strong>Licenses:</strong> Application source (MIT) • Pocket TTS weights (CC-BY-4.0 + Kyutai Prohibited Use) • Chatterbox ONNX (MIT) • MP3 encoder <code>@breezystack/lamejs</code> (LGPL-3.0).
+            <strong className="text-[var(--vf-text)]">Licenses:</strong> Application source (MIT) · Pocket TTS weights (CC-BY-4.0 + Kyutai Prohibited Use) · Chatterbox ONNX (MIT) · MP3 encoder <code className="font-mono">@breezystack/lamejs</code> (LGPL-3.0).
           </p>
         </div>
       </section>
 
       {/* Danger Zone: Delete All Local Data */}
-      <section className="rounded-2xl border border-rose-500/30 bg-rose-500/5 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <section className="rounded-lg border border-[var(--vf-danger)]/35 bg-[var(--vf-danger)]/5 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-sm font-semibold text-rose-400">Delete All Local Data</h2>
+          <h2 className="text-sm font-semibold text-[var(--vf-danger)]">Delete All Local Data</h2>
           <p className="text-xs text-[var(--vf-text-muted)] mt-0.5">
             Permanently deletes all voice profiles, projects, synthesized audio chunks, pronunciation rules, lab runs, cached AI model weights, and local preferences.
           </p>
@@ -342,7 +350,7 @@ export function SettingsPage() {
         <button
           type="button"
           onClick={() => setWipeModalOpen(true)}
-          className="inline-flex items-center gap-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 text-xs font-semibold cursor-pointer shrink-0"
+          className="inline-flex items-center gap-2 rounded-md bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 text-xs font-semibold cursor-pointer shrink-0 transition-colors"
         >
           <Trash2 className="h-3.5 w-3.5" />
           <span>Delete All Local Data</span>
@@ -360,7 +368,7 @@ export function SettingsPage() {
               type="button"
               disabled={isWipingData}
               onClick={() => setWipeModalOpen(false)}
-              className="rounded-xl border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-4 py-2 text-xs font-medium cursor-pointer"
+              className="rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-4 py-2 text-xs font-medium text-[var(--vf-text)] cursor-pointer"
             >
               Cancel
             </button>
@@ -368,7 +376,7 @@ export function SettingsPage() {
               type="button"
               disabled={isWipingData}
               onClick={() => void handleConfirmWipe()}
-              className="rounded-xl bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 text-xs font-semibold cursor-pointer disabled:opacity-50"
+              className="rounded-md bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 text-xs font-semibold cursor-pointer disabled:opacity-50"
             >
               {isWipingData ? 'Deleting...' : 'Yes, Delete Everything'}
             </button>

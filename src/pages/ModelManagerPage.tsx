@@ -252,27 +252,28 @@ export function ModelManagerPage() {
   const modelStates = Object.values(models);
 
   return (
-    <div className="space-y-6">
-      {/* Mirror / Source Banner */}
-      <section className="rounded-2xl border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs font-medium text-[var(--vf-text-muted)]">
-            <Globe className="h-4 w-4 text-[var(--vf-accent)]" />
+    <div className="max-w-6xl mx-auto space-y-4 pb-10">
+      {/* Compact Mirror / Source Banner so first card Download & Cache stays above the fold */}
+      <section className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="space-y-0.5 min-w-0">
+          <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-wider text-[var(--vf-text-muted)]">
+            <Globe className="h-3.5 w-3.5 text-[var(--vf-accent)] shrink-0" />
             <span>Active Model Download Source</span>
+            <span className="text-[var(--vf-text-subtle)]">·</span>
+            <span className="truncate font-sans normal-case tracking-normal text-xs font-medium text-[var(--vf-text)]">
+              {customModelBaseUrl ? (
+                <>
+                  Self-hosted:{' '}
+                  <code className="rounded-sm bg-[var(--vf-bg)] border border-[var(--vf-border-subtle)] px-1.5 py-0.5 font-mono text-[var(--vf-accent)]">
+                    {customModelBaseUrl}
+                  </code>
+                </>
+              ) : (
+                'Pinned Hugging Face Repositories (Commit-SHA Locked, Ungated)'
+              )}
+            </span>
           </div>
-          <p className="text-sm font-medium">
-            {customModelBaseUrl ? (
-              <>
-                Self-hosted mirror:{' '}
-                <code className="rounded bg-[var(--vf-surface-muted)] px-1.5 py-0.5 text-xs font-mono text-[var(--vf-accent)]">
-                  {customModelBaseUrl}
-                </code>
-              </>
-            ) : (
-              'Pinned Hugging Face Repositories (Commit-SHA Locked, Ungated)'
-            )}
-          </p>
-          <p className="text-xs text-[var(--vf-text-muted)]">
+          <p className="text-[11px] text-[var(--vf-text-muted)]">
             Every downloaded or locally imported file is verified byte-for-byte against its manifest SHA-256 digest before caching.
           </p>
         </div>
@@ -281,7 +282,7 @@ export function ModelManagerPage() {
           <button
             type="button"
             onClick={() => void loadManifest().catch(() => undefined)}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-3 py-2 text-xs font-medium hover:border-[var(--vf-accent)]/40 cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-3 py-1.5 text-xs font-medium text-[var(--vf-text)] hover:border-[var(--vf-accent)]/50 cursor-pointer transition-colors"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${manifestLoading ? 'animate-spin' : ''}`} />
             <span>Refresh Status</span>
@@ -289,7 +290,7 @@ export function ModelManagerPage() {
           <button
             type="button"
             onClick={navigateSettings}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-3 py-2 text-xs font-medium hover:border-[var(--vf-accent)]/40 cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-3 py-1.5 text-xs font-medium text-[var(--vf-text)] hover:border-[var(--vf-accent)]/50 cursor-pointer transition-colors"
           >
             <span>Configure Mirror</span>
           </button>
@@ -297,13 +298,13 @@ export function ModelManagerPage() {
       </section>
 
       {manifestError && (
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-xs text-rose-300">
+        <div className="rounded-lg border border-[var(--vf-danger)]/35 bg-[var(--vf-danger)]/10 p-3.5 text-xs text-[var(--vf-danger)]">
           Failed to load pinned model manifest: {manifestError}
         </div>
       )}
 
-      {/* Model Cards */}
-      <div className="space-y-5">
+      {/* Hardware-Catalog Weight Cards */}
+      <div className="space-y-4">
         {modelStates.map((runtime) => {
           const isChatterbox = runtime.entry.engineId === 'chatterbox';
           const isQ4 = isChatterbox && chatterboxPrecision === 'q4';
@@ -327,20 +328,20 @@ export function ModelManagerPage() {
           return (
             <article
               key={runtime.entry.engineId}
-              className="rounded-2xl border border-[var(--vf-border)] bg-[var(--vf-surface)] p-5 sm:p-6 space-y-5"
+              className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4 sm:p-5 space-y-4"
             >
-              {/* Header */}
-              <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
-                <div className="space-y-1.5">
+              {/* Header: Title + Status Badge on left, Precision + Download/Cancel at top-right */}
+              <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-3 pb-3 border-b border-[var(--vf-border-subtle)]">
+                <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-base sm:text-lg font-semibold tracking-tight">
+                    <h2 className="text-base font-semibold tracking-tight text-[var(--vf-text)]">
                       {activeEntry.displayName}
                     </h2>
                     <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      className={`inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-[11px] font-mono font-medium border ${
                         offlineReady
-                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-[var(--vf-surface-muted)] text-[var(--vf-text-muted)] border border-[var(--vf-border)]'
+                          ? 'bg-[var(--vf-success)]/15 text-[var(--vf-success)] border-[var(--vf-success)]/35'
+                          : 'bg-[var(--vf-bg)] text-[var(--vf-text-muted)] border-[var(--vf-border)]'
                       }`}
                     >
                       {offlineReady ? (
@@ -352,27 +353,27 @@ export function ModelManagerPage() {
                         {offlineReady ? 'Offline Ready (100% Verified)' : 'Not Cached Offline'}
                       </span>
                     </span>
-                    <span className="rounded-full bg-[var(--vf-accent-soft)] px-2.5 py-0.5 text-[11px] font-mono font-medium text-[var(--vf-accent)]">
+                    <span className="rounded-sm bg-[var(--vf-accent-soft)] border border-[var(--vf-accent)]/35 px-2 py-0.5 text-[11px] font-mono font-medium text-[var(--vf-accent)]">
                       {activeEntry.precision}
                     </span>
                   </div>
 
                   <p className="text-xs text-[var(--vf-text-muted)]">
-                    Publisher: <strong className="text-[var(--vf-text)]">{publisher}</strong> •
-                    Repo: <code className="font-mono">{activeEntry.repoId}</code> • Commit:{' '}
-                    <code className="font-mono" title={activeEntry.revision}>
+                    Publisher: <strong className="text-[var(--vf-text)]">{publisher}</strong> ·
+                    Repo: <code className="font-mono text-[var(--vf-text)]">{activeEntry.repoId}</code> · Commit:{' '}
+                    <code className="font-mono tabular-nums" title={activeEntry.revision}>
                       {activeEntry.revision.slice(0, 12)}
                     </code>
                   </p>
                 </div>
 
                 {/* Header Actions: Download/Cancel prominently at top-right alongside Precision */}
-                <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
                   {isChatterbox && (
                     <div className="flex items-center gap-2">
                       <label
                         htmlFor="chatterbox-precision-select"
-                        className="text-xs text-[var(--vf-text-muted)]"
+                        className="text-xs font-mono text-[var(--vf-text-muted)]"
                       >
                         Precision:
                       </label>
@@ -383,7 +384,7 @@ export function ModelManagerPage() {
                           setChatterboxPrecision(e.target.value as ChatterboxLmPrecision)
                         }
                         disabled={isDownloading}
-                        className="rounded-xl border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-3 py-1.5 text-xs font-mono text-[var(--vf-text)] focus:outline-none focus:border-[var(--vf-accent)]"
+                        className="rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-2.5 py-1.5 text-xs font-mono text-[var(--vf-text)] focus:outline-none focus:border-[var(--vf-accent)]"
                       >
                         <option value="q4f16">q4f16 (WebGPU f16)</option>
                         <option value="q4">q4 (WebGPU f32 / WASM)</option>
@@ -395,7 +396,7 @@ export function ModelManagerPage() {
                     <button
                       type="button"
                       onClick={() => void handleDownload(activeEntry, isQ4)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] text-white px-4 py-2 text-xs font-semibold shadow-sm shadow-[#7C5CFF]/25 transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-2 rounded-md bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] text-white px-4 py-2 text-xs font-semibold transition-colors cursor-pointer"
                     >
                       <Download className="h-3.5 w-3.5" />
                       <span>{offlineReady ? 'Verify / Re-sync Cache' : 'Download & Cache'}</span>
@@ -404,7 +405,7 @@ export function ModelManagerPage() {
                     <button
                       type="button"
                       onClick={() => handleCancel(activeEntry.engineId, isQ4)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 text-xs font-semibold transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-2 rounded-md bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 text-xs font-semibold transition-colors cursor-pointer"
                     >
                       <XCircle className="h-3.5 w-3.5" />
                       <span>Cancel Download</span>
@@ -413,21 +414,25 @@ export function ModelManagerPage() {
                 </div>
               </div>
 
-              {/* Metadata Grid */}
+              {/* Technical Spec Row */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-                <div className="rounded-xl border border-[var(--vf-border-subtle)] bg-[var(--vf-surface-elevated)] p-3">
-                  <div className="text-[var(--vf-text-muted)]">Download / Cached Size</div>
-                  <div className="mt-1 font-mono font-medium">
-                    {formatBytes(activeEntry.totalSizeBytes)} •{' '}
-                    <span className={offlineReady ? 'text-emerald-400' : 'text-[var(--vf-text-muted)]'}>
+                <div className="rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] p-3">
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--vf-text-subtle)]">
+                    Download / Cached Size
+                  </div>
+                  <div className="mt-1 font-mono tabular-nums font-semibold text-[var(--vf-text)]">
+                    {formatBytes(activeEntry.totalSizeBytes)} ·{' '}
+                    <span className={offlineReady ? 'text-[var(--vf-success)]' : 'text-[var(--vf-text-muted)]'}>
                       {formatBytes(cachedSizeBytes)} cached
                     </span>
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-[var(--vf-border-subtle)] bg-[var(--vf-surface-elevated)] p-3">
-                  <div className="text-[var(--vf-text-muted)]">License &amp; Languages</div>
-                  <div className="mt-1 font-medium flex flex-wrap items-center gap-1.5">
+                <div className="rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] p-3">
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--vf-text-subtle)]">
+                    License &amp; Languages
+                  </div>
+                  <div className="mt-1 font-medium flex flex-wrap items-center gap-1.5 text-[var(--vf-text)]">
                     {activeEntry.licenseUrl ? (
                       <a
                         href={activeEntry.licenseUrl}
@@ -441,22 +446,26 @@ export function ModelManagerPage() {
                     ) : (
                       <span>{activeEntry.license}</span>
                     )}
-                    <span className="text-[var(--vf-text-subtle)]">•</span>
+                    <span className="text-[var(--vf-text-subtle)]">·</span>
                     <span>{getLanguagesLabel(activeEntry.engineId)}</span>
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-[var(--vf-border-subtle)] bg-[var(--vf-surface-elevated)] p-3">
-                  <div className="text-[var(--vf-text-muted)]">Hardware Requirements</div>
-                  <div className="mt-1 font-medium">
-                    ~{activeEntry.estimatedMemoryMb} MB RAM/VRAM •{' '}
-                    <span className="uppercase font-mono">{activeEntry.recommendedExecutionMode}</span>
+                <div className="rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] p-3">
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--vf-text-subtle)]">
+                    Hardware Requirements
+                  </div>
+                  <div className="mt-1 font-mono tabular-nums font-semibold text-[var(--vf-text)]">
+                    ~{activeEntry.estimatedMemoryMb} MB RAM/VRAM ·{' '}
+                    <span className="uppercase">{activeEntry.recommendedExecutionMode}</span>
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-[var(--vf-border-subtle)] bg-[var(--vf-surface-elevated)] p-3">
-                  <div className="text-[var(--vf-text-muted)]">Measured RTF on This Device</div>
-                  <div className="mt-1 font-mono font-medium">
+                <div className="rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] p-3">
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--vf-text-subtle)]">
+                    Measured RTF on This Device
+                  </div>
+                  <div className="mt-1 font-mono tabular-nums font-semibold text-[var(--vf-text)]">
                     {runtime.measuredRtf
                       ? `${runtime.measuredRtf.rtf.toFixed(2)}x (${runtime.measuredRtf.sampleCount} runs)`
                       : 'Not measured yet'}
@@ -468,18 +477,18 @@ export function ModelManagerPage() {
               <div className="space-y-2 text-xs">
                 {compat && (
                   <div
-                    className={`rounded-xl border p-3 flex flex-col gap-1 ${
+                    className={`rounded-md border p-3 flex flex-col gap-1 ${
                       compat.compatible
-                        ? 'border-emerald-500/25 bg-emerald-500/5'
-                        : 'border-rose-500/30 bg-rose-500/10'
+                        ? 'border-[var(--vf-success)]/30 bg-[var(--vf-success)]/5'
+                        : 'border-[var(--vf-danger)]/35 bg-[var(--vf-danger)]/10'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-medium flex items-center gap-1.5">
+                      <span className="font-medium flex items-center gap-1.5 text-[var(--vf-text)]">
                         {compat.compatible ? (
-                          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                          <CheckCircle2 className="h-4 w-4 text-[var(--vf-success)]" />
                         ) : (
-                          <XCircle className="h-4 w-4 text-rose-400" />
+                          <XCircle className="h-4 w-4 text-[var(--vf-danger)]" />
                         )}
                         <span>
                           Browser Compatibility:{' '}
@@ -490,7 +499,7 @@ export function ModelManagerPage() {
                       </span>
                     </div>
                     {isChatterbox && !compat.shaderF16Supported && chatterboxPrecision === 'q4f16' && (
-                      <p className="text-amber-400 flex items-center gap-1.5">
+                      <p className="text-[var(--vf-warning)] flex items-center gap-1.5">
                         <TriangleAlert className="h-3.5 w-3.5 shrink-0" />
                         <span>
                           WebGPU shader-f16 was not detected; switch precision above to{' '}
@@ -499,7 +508,7 @@ export function ModelManagerPage() {
                       </p>
                     )}
                     {compat.blockers.map((b, idx) => (
-                      <p key={idx} className="text-rose-400">
+                      <p key={idx} className="text-[var(--vf-danger)]">
                         {b}
                       </p>
                     ))}
@@ -522,7 +531,7 @@ export function ModelManagerPage() {
 
               {/* Live Progress Bar */}
               {(isDownloading || progress) && (
-                <div className="rounded-xl border border-[var(--vf-accent)]/30 bg-[var(--vf-surface-elevated)] p-3.5">
+                <div className="rounded-md border border-[var(--vf-accent)]/40 bg-[var(--vf-bg)] p-3.5">
                   <ProgressBar
                     value={progress?.fraction ?? 0}
                     indeterminate={!progress}
@@ -543,25 +552,25 @@ export function ModelManagerPage() {
               )}
 
               {errorMsg && (
-                <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">
+                <div className="rounded-md border border-[var(--vf-danger)]/35 bg-[var(--vf-danger)]/10 p-3 text-xs text-[var(--vf-danger)]">
                   {errorMsg}
                 </div>
               )}
 
               {/* Secondary Management Actions */}
-              <div className="flex flex-wrap items-center gap-2.5">
+              <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[var(--vf-border-subtle)]">
                 <button
                   type="button"
                   disabled={isDownloading}
                   onClick={() => void handleVerify(activeEntry, isQ4)}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] hover:border-[var(--vf-accent)]/40 px-3.5 py-2 text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] hover:border-[var(--vf-accent)]/50 px-3 py-1.5 text-xs font-medium text-[var(--vf-text)] transition-colors cursor-pointer disabled:opacity-50"
                 >
-                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                  <ShieldCheck className="h-3.5 w-3.5 text-[var(--vf-success)]" />
                   <span>Verify SHA-256</span>
                 </button>
 
                 {/* Folder Import */}
-                <label className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] hover:border-[var(--vf-accent)]/40 px-3.5 py-2 text-xs font-medium transition-colors cursor-pointer">
+                <label className="inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] hover:border-[var(--vf-accent)]/50 px-3 py-1.5 text-xs font-medium text-[var(--vf-text)] transition-colors cursor-pointer">
                   <FolderUp className="h-3.5 w-3.5 text-[var(--vf-accent)]" />
                   <span>Import Folder</span>
                   <input
@@ -577,7 +586,7 @@ export function ModelManagerPage() {
                 </label>
 
                 {/* Individual Files Import */}
-                <label className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] hover:border-[var(--vf-accent)]/40 px-3.5 py-2 text-xs font-medium transition-colors cursor-pointer">
+                <label className="inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] hover:border-[var(--vf-accent)]/50 px-3 py-1.5 text-xs font-medium text-[var(--vf-text)] transition-colors cursor-pointer">
                   <Upload className="h-3.5 w-3.5 text-[var(--vf-accent)]" />
                   <span>Import Files</span>
                   <input
@@ -596,7 +605,7 @@ export function ModelManagerPage() {
                     type="button"
                     disabled={isDownloading}
                     onClick={() => void handleDelete(activeEntry, isQ4)}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 px-3.5 py-2 text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-danger)]/35 bg-[var(--vf-danger)]/10 hover:bg-[var(--vf-danger)]/20 text-[var(--vf-danger)] px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                     <span>Clear Cache</span>
@@ -611,7 +620,7 @@ export function ModelManagerPage() {
                       [activeEntry.engineId]: !showArtifacts,
                     }))
                   }
-                  className="ml-auto inline-flex items-center gap-1 text-xs text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] cursor-pointer"
+                  className="ml-auto inline-flex items-center gap-1 text-xs font-mono text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] cursor-pointer"
                 >
                   <span>Artifacts ({activeEntry.artifacts.length})</span>
                   {showArtifacts ? (
@@ -624,9 +633,9 @@ export function ModelManagerPage() {
 
               {/* Artifact Manifest & Verification Breakdown */}
               {showArtifacts && (
-                <div className="overflow-x-auto rounded-xl border border-[var(--vf-border-subtle)]">
+                <div className="overflow-x-auto rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)]">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-[var(--vf-surface-elevated)] text-[var(--vf-text-muted)]">
+                    <thead className="bg-[var(--vf-surface-elevated)] text-[10px] font-mono uppercase tracking-wider text-[var(--vf-text-muted)]">
                       <tr>
                         <th className="px-3 py-2 font-medium">Role</th>
                         <th className="px-3 py-2 font-medium">Relative Path</th>
@@ -641,21 +650,26 @@ export function ModelManagerPage() {
                           (r) => r.relativePath === artifact.relativePath
                         );
                         return (
-                          <tr key={artifact.relativePath} className="hover:bg-[var(--vf-surface-elevated)]/50">
+                          <tr key={artifact.relativePath} className="hover:bg-[var(--vf-surface)]">
                             <td className="px-3 py-2 font-mono">{artifact.role}</td>
                             <td className="px-3 py-2 font-mono text-[var(--vf-text-muted)]">
                               {artifact.relativePath}
                             </td>
-                            <td className="px-3 py-2 font-mono">{formatBytes(artifact.sizeBytes)}</td>
-                            <td className="px-3 py-2 font-mono text-[var(--vf-text-subtle)]" title={artifact.sha256}>
+                            <td className="px-3 py-2 font-mono tabular-nums">
+                              {formatBytes(artifact.sizeBytes)}
+                            </td>
+                            <td
+                              className="px-3 py-2 font-mono tabular-nums text-[var(--vf-text-subtle)]"
+                              title={artifact.sha256}
+                            >
                               {artifact.sha256.slice(0, 14)}…
                             </td>
                             <td className="px-3 py-2">
                               {res ? (
                                 res.ok ? (
-                                  <span className="text-emerald-400 font-medium">Verified</span>
+                                  <span className="text-[var(--vf-success)] font-medium">Verified</span>
                                 ) : (
-                                  <span className="text-rose-400">{res.reason ?? 'Failed'}</span>
+                                  <span className="text-[var(--vf-danger)]">{res.reason ?? 'Failed'}</span>
                                 )
                               ) : (
                                 <span className="text-[var(--vf-text-subtle)]">Not run</span>

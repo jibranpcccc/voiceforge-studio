@@ -5,10 +5,10 @@ import {
   Award,
   Check,
   Download,
-  FlaskConical,
   Loader2,
   Play,
   Plus,
+  SlidersHorizontal,
   Trash2,
 } from 'lucide-react';
 import { WaveformPlayer } from '../components/audio/WaveformPlayer';
@@ -412,14 +412,14 @@ export function AudioLabPage() {
   };
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <FlaskConical className="w-5 h-5 text-[#7C5CFF]" />
+    <div className="max-w-6xl mx-auto space-y-5 pb-10">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--vf-border-subtle)]">
+        <div className="space-y-1">
+          <h1 className="text-xl font-semibold tracking-tight text-[var(--vf-text)] flex items-center gap-2">
+            <SlidersHorizontal className="w-5 h-5 text-[var(--vf-accent)]" />
             Audio Lab: A/B Engine &amp; Parameter Comparison
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-[var(--vf-text-muted)]">
             Sequential on-device synthesis with real measured telemetry and an interactive listening rubric.
           </p>
         </div>
@@ -429,7 +429,7 @@ export function AudioLabPage() {
             <button
               type="button"
               onClick={exportReportJson}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] text-[var(--vf-text)] hover:border-[var(--vf-accent)]/50 transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               Export JSON
@@ -437,7 +437,7 @@ export function AudioLabPage() {
             <button
               type="button"
               onClick={exportReportMarkdown}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] text-[var(--vf-text)] hover:border-[var(--vf-accent)]/50 transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               Export Markdown
@@ -447,17 +447,17 @@ export function AudioLabPage() {
       </div>
 
       {/* Script & Voice Selection */}
-      <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] p-4 space-y-4">
+      <div className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+            <label className="block text-[11px] font-mono uppercase tracking-wider font-medium text-[var(--vf-text-muted)]">
               Voice Profile
             </label>
             <select
               value={effectiveVoiceId}
               disabled={isRunning}
               onChange={(e) => setSelectedVoiceId(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] px-3 py-2 text-xs text-slate-900 dark:text-slate-100"
+              className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-3 py-2 text-xs text-[var(--vf-text)] focus:outline-none focus:border-[var(--vf-accent)]"
             >
               {voices.length === 0 ? (
                 <option value="">No voice profiles available</option>
@@ -472,7 +472,7 @@ export function AudioLabPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+            <label className="block text-[11px] font-mono uppercase tracking-wider font-medium text-[var(--vf-text-muted)]">
               Evaluation Prompt Preset
             </label>
             <div className="flex flex-wrap gap-1.5">
@@ -482,7 +482,7 @@ export function AudioLabPage() {
                   type="button"
                   disabled={isRunning}
                   onClick={() => setScriptText(preset.text)}
-                  className="px-2.5 py-1.5 rounded-lg text-xs border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-[#7C5CFF] transition"
+                  className="px-2.5 py-1.5 rounded-md text-xs border border-[var(--vf-border)] bg-[var(--vf-bg)] text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:border-[var(--vf-accent)] transition-colors cursor-pointer"
                 >
                   {preset.title}
                 </button>
@@ -497,21 +497,21 @@ export function AudioLabPage() {
           value={scriptText}
           onChange={(e) => setScriptText(e.target.value)}
           placeholder="Enter evaluation script..."
-          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] p-3 text-xs text-slate-900 dark:text-slate-100 focus:border-[#7C5CFF] focus:outline-none"
+          className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] p-3 text-xs text-[var(--vf-text)] placeholder:text-[var(--vf-text-subtle)] focus:border-[var(--vf-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-accent)]/40"
         />
       </div>
 
       {/* Configurations */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+          <h2 className="text-sm font-semibold text-[var(--vf-text)]">
             Comparison Configurations ({configs.length})
           </h2>
           <button
             type="button"
             disabled={isRunning}
             onClick={addConfig}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium border border-[var(--vf-border)] bg-[var(--vf-surface)] text-[var(--vf-text)] hover:border-[var(--vf-accent)]/50 disabled:opacity-40 cursor-pointer transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             Add Configuration
@@ -528,7 +528,7 @@ export function AudioLabPage() {
             return (
               <div
                 key={cfg.id}
-                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] p-4 space-y-3"
+                className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4 space-y-3"
               >
                 <div className="flex items-center justify-between gap-2">
                   <input
@@ -536,14 +536,14 @@ export function AudioLabPage() {
                     disabled={isRunning}
                     value={cfg.label}
                     onChange={(e) => updateConfig(cfg.id, { label: e.target.value })}
-                    className="flex-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] px-2.5 py-1.5 text-xs font-semibold text-slate-900 dark:text-slate-100"
+                    className="flex-1 rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-2.5 py-1.5 text-xs font-semibold text-[var(--vf-text)] focus:outline-none focus:border-[var(--vf-accent)]"
                   />
                   {configs.length > 2 && (
                     <button
                       type="button"
                       disabled={isRunning}
                       onClick={() => removeConfig(cfg.id)}
-                      className="p-1.5 rounded text-slate-400 hover:text-rose-400"
+                      className="p-1.5 rounded-md text-[var(--vf-text-subtle)] hover:text-[var(--vf-danger)] cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -560,7 +560,7 @@ export function AudioLabPage() {
                         parameters: extractEngineParametersForEngine({}, e.target.value),
                       })
                     }
-                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] px-2.5 py-1.5 text-xs text-slate-900 dark:text-slate-100"
+                    className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-2.5 py-1.5 text-xs text-[var(--vf-text)] focus:outline-none focus:border-[var(--vf-accent)]"
                   >
                     {availableEngines.map((eng) => (
                       <option key={eng.id} value={eng.id}>
@@ -571,7 +571,7 @@ export function AudioLabPage() {
                 </div>
 
                 {!compatible && (
-                  <div className="flex items-center gap-1.5 text-[11px] text-amber-500">
+                  <div className="flex items-center gap-1.5 text-[11px] text-[var(--vf-warning)]">
                     <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
                     Selected voice lacks conditioning for {engine?.name}.
                   </div>
@@ -583,8 +583,8 @@ export function AudioLabPage() {
                     return (
                       <div key={spec.key} className="space-y-1">
                         <div className="flex justify-between text-[11px]">
-                          <span className="text-slate-600 dark:text-slate-400">{spec.label}</span>
-                          <span className="font-mono text-[#7C5CFF]">{val}</span>
+                          <span className="text-[var(--vf-text-muted)]">{spec.label}</span>
+                          <span className="font-mono tabular-nums text-[var(--vf-accent)]">{val}</span>
                         </div>
                         <input
                           type="number"
@@ -596,7 +596,7 @@ export function AudioLabPage() {
                           onChange={(e) =>
                             updateConfigParam(cfg.id, spec.key, Number(e.target.value))
                           }
-                          className="w-full rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] px-2 py-1 text-xs font-mono text-slate-900 dark:text-slate-100"
+                          className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-2 py-1 text-xs font-mono tabular-nums text-[var(--vf-text)] focus:outline-none focus:border-[var(--vf-accent)]"
                         />
                       </div>
                     );
@@ -612,19 +612,19 @@ export function AudioLabPage() {
             type="button"
             disabled={isRunning || !selectedVoice || !scriptText.trim()}
             onClick={() => void runSequentialComparison()}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-[#7C5CFF] text-white hover:bg-[#6A48F5] disabled:opacity-40 transition"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md text-xs font-semibold bg-[var(--vf-accent)] text-white hover:bg-[var(--vf-accent-hover)] disabled:opacity-40 transition-colors cursor-pointer"
           >
             {isRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
             {isRunning ? 'Running Sequential Benchmark...' : 'Run A/B Comparison'}
           </button>
 
           {activeStatus && (
-            <span className="text-xs text-slate-500 dark:text-slate-400">{activeStatus}</span>
+            <span className="text-xs font-mono text-[var(--vf-text-muted)]">{activeStatus}</span>
           )}
         </div>
 
         {runError && (
-          <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2.5 text-xs text-rose-700 dark:text-rose-300">
+          <div className="rounded-lg border border-[var(--vf-danger)]/35 bg-[var(--vf-danger)]/10 px-4 py-2.5 text-xs text-[var(--vf-danger)]">
             {runError}
           </div>
         )}
@@ -639,18 +639,18 @@ export function AudioLabPage() {
               return (
                 <div
                   key={res.configId}
-                  className={`rounded-xl border p-4 space-y-4 ${
+                  className={`rounded-lg border p-4 space-y-4 ${
                     isPreferred
-                      ? 'border-[#7C5CFF] bg-[#7C5CFF]/5'
-                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622]'
+                      ? 'border-[var(--vf-accent)] bg-[var(--vf-accent-soft)]'
+                      : 'border-[var(--vf-border)] bg-[var(--vf-surface)]'
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start justify-between gap-2 pb-2 border-b border-[var(--vf-border-subtle)]">
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                      <h3 className="text-sm font-semibold text-[var(--vf-text)]">
                         {res.label}
                       </h3>
-                      <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                      <div className="text-[11px] font-mono tabular-nums text-[var(--vf-text-muted)]">
                         {res.engineId} · {res.backend} · {res.audio.sampleRate} Hz
                       </div>
                     </div>
@@ -659,10 +659,10 @@ export function AudioLabPage() {
                       onClick={() =>
                         setPreferredId((prev) => (prev === res.configId ? null : res.configId))
                       }
-                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold border transition ${
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold border transition-colors cursor-pointer ${
                         isPreferred
-                          ? 'bg-[#7C5CFF] border-[#7C5CFF] text-white'
-                          : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-[#7C5CFF]'
+                          ? 'bg-[var(--vf-accent)] border-[var(--vf-accent)] text-white'
+                          : 'border-[var(--vf-border)] bg-[var(--vf-bg)] text-[var(--vf-text-muted)] hover:border-[var(--vf-accent)] hover:text-[var(--vf-text)]'
                       }`}
                     >
                       {isPreferred ? <Check className="w-3.5 h-3.5" /> : <Award className="w-3.5 h-3.5" />}
@@ -678,33 +678,49 @@ export function AudioLabPage() {
                   />
 
                   {/* Real Measured Telemetry */}
-                  <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0B0D12]/60 p-3">
-                    <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
-                      <Activity className="w-3.5 h-3.5 text-[#7C5CFF]" />
+                  <div className="rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] p-3">
+                    <div className="flex items-center gap-1.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-[var(--vf-text-subtle)] mb-2">
+                      <Activity className="w-3.5 h-3.5 text-[var(--vf-accent)]" />
                       Measured On-Device Telemetry
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                       <div>
-                        <span className="text-[10px] text-slate-400 block">Total Latency</span>
-                        <strong className="font-mono">{res.totalLatencyMs.toFixed(0)} ms</strong>
+                        <span className="text-[10px] font-mono uppercase text-[var(--vf-text-subtle)] block">
+                          Total Latency
+                        </span>
+                        <strong className="font-mono tabular-nums text-[var(--vf-text)]">
+                          {res.totalLatencyMs.toFixed(0)} ms
+                        </strong>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 block">First-Chunk Latency</span>
-                        <strong className="font-mono">{res.firstChunkLatencyMs.toFixed(0)} ms</strong>
+                        <span className="text-[10px] font-mono uppercase text-[var(--vf-text-subtle)] block">
+                          First-Chunk Latency
+                        </span>
+                        <strong className="font-mono tabular-nums text-[var(--vf-text)]">
+                          {res.firstChunkLatencyMs.toFixed(0)} ms
+                        </strong>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 block">Real-Time Factor</span>
-                        <strong className="font-mono">{res.realTimeFactor.toFixed(2)}x</strong>
+                        <span className="text-[10px] font-mono uppercase text-[var(--vf-text-subtle)] block">
+                          Real-Time Factor
+                        </span>
+                        <strong className="font-mono tabular-nums text-[var(--vf-text)]">
+                          {res.realTimeFactor.toFixed(2)}x
+                        </strong>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 block">Output Duration</span>
-                        <strong className="font-mono">{res.audio.durationSec.toFixed(2)} s</strong>
+                        <span className="text-[10px] font-mono uppercase text-[var(--vf-text-subtle)] block">
+                          Output Duration
+                        </span>
+                        <strong className="font-mono tabular-nums text-[var(--vf-text)]">
+                          {res.audio.durationSec.toFixed(2)} s
+                        </strong>
                       </div>
                       <div className="col-span-2">
-                        <span className="text-[10px] text-slate-400 block">
+                        <span className="text-[10px] font-mono uppercase text-[var(--vf-text-subtle)] block">
                           JS Heap (performance.memory)
                         </span>
-                        <strong className="font-mono">
+                        <strong className="font-mono tabular-nums text-[var(--vf-text)]">
                           {res.jsHeapUsedBytes !== null
                             ? formatBytes(res.jsHeapUsedBytes)
                             : 'Not exposed by browser'}
@@ -715,7 +731,7 @@ export function AudioLabPage() {
 
                   {/* Human Listening Rubric (Zero fabricated scores) */}
                   <div className="space-y-2.5">
-                    <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                    <div className="text-xs font-semibold text-[var(--vf-text)]">
                       Human Listening Rubric (1–5)
                     </div>
                     <div className="space-y-1.5">
@@ -726,17 +742,17 @@ export function AudioLabPage() {
                             key={crit.key}
                             className="flex items-center justify-between gap-2 text-xs"
                           >
-                            <span className="text-slate-600 dark:text-slate-300">{crit.label}</span>
+                            <span className="text-[var(--vf-text-muted)]">{crit.label}</span>
                             <div className="flex items-center gap-1">
                               {[1, 2, 3, 4, 5].map((score) => (
                                 <button
                                   key={score}
                                   type="button"
                                   onClick={() => setRating(res.configId, crit.key, score)}
-                                  className={`w-6 h-6 rounded text-[11px] font-mono font-semibold border transition ${
+                                  className={`w-6 h-6 rounded-sm text-[11px] font-mono tabular-nums font-semibold border transition-colors cursor-pointer ${
                                     current === score
-                                      ? 'bg-[#7C5CFF] border-[#7C5CFF] text-white'
-                                      : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-[#7C5CFF]'
+                                      ? 'bg-[var(--vf-accent)] border-[var(--vf-accent)] text-white'
+                                      : 'border-[var(--vf-border)] bg-[var(--vf-bg)] text-[var(--vf-text-muted)] hover:border-[var(--vf-accent)] hover:text-[var(--vf-text)]'
                                   }`}
                                 >
                                   {score}
@@ -748,13 +764,13 @@ export function AudioLabPage() {
                       })}
                     </div>
 
-                    <div className="flex flex-wrap gap-4 pt-2 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300">
+                    <div className="flex flex-wrap gap-4 pt-2 border-t border-[var(--vf-border-subtle)] text-xs text-[var(--vf-text-muted)]">
                       <label className="inline-flex items-center gap-1.5 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={res.defects.wordOmissions}
                           onChange={() => toggleDefect(res.configId, 'wordOmissions')}
-                          className="accent-[#7C5CFF]"
+                          className="accent-[var(--vf-accent)]"
                         />
                         Word Omissions
                       </label>
@@ -763,7 +779,7 @@ export function AudioLabPage() {
                           type="checkbox"
                           checked={res.defects.repeatedWords}
                           onChange={() => toggleDefect(res.configId, 'repeatedWords')}
-                          className="accent-[#7C5CFF]"
+                          className="accent-[var(--vf-accent)]"
                         />
                         Repeated Words
                       </label>
@@ -772,7 +788,7 @@ export function AudioLabPage() {
                           type="checkbox"
                           checked={res.defects.artifacts}
                           onChange={() => toggleDefect(res.configId, 'artifacts')}
-                          className="accent-[#7C5CFF]"
+                          className="accent-[var(--vf-accent)]"
                         />
                         Artifacts
                       </label>
@@ -783,8 +799,8 @@ export function AudioLabPage() {
             })}
           </div>
 
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] p-4 space-y-2">
-            <label className="block text-xs font-semibold text-slate-800 dark:text-slate-200">
+          <div className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4 space-y-2">
+            <label className="block text-xs font-semibold text-[var(--vf-text)]">
               Reviewer Listening Notes
             </label>
             <textarea
@@ -792,7 +808,7 @@ export function AudioLabPage() {
               value={reviewerNotes}
               onChange={(e) => setReviewerNotes(e.target.value)}
               placeholder="Optional qualitative observations for your exported report..."
-              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] p-2.5 text-xs text-slate-900 dark:text-slate-100"
+              className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] p-2.5 text-xs text-[var(--vf-text)] placeholder:text-[var(--vf-text-subtle)] focus:outline-none focus:border-[var(--vf-accent)]"
             />
           </div>
         </div>

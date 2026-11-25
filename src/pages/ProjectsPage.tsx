@@ -144,13 +144,13 @@ export function ProjectsPage() {
   };
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+    <div className="max-w-6xl mx-auto space-y-5 pb-10">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--vf-border-subtle)]">
+        <div className="space-y-1">
+          <h1 className="text-xl font-semibold tracking-tight text-[var(--vf-text)]">
             Narration Projects
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-[var(--vf-text-muted)]">
             Manage long-form narration scripts, recover interrupted queues, and export portable project JSON.
           </p>
         </div>
@@ -170,7 +170,7 @@ export function ProjectsPage() {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] text-[var(--vf-text)] hover:border-[var(--vf-accent)]/50 transition-colors cursor-pointer"
           >
             <Upload className="w-3.5 h-3.5" />
             Import Project JSON
@@ -178,7 +178,7 @@ export function ProjectsPage() {
           <button
             type="button"
             onClick={handleNewBlankProject}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#7C5CFF] text-white hover:bg-[#6A48F5] transition"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-[var(--vf-accent)] text-white hover:bg-[var(--vf-accent-hover)] transition-colors cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             New Narration
@@ -188,43 +188,43 @@ export function ProjectsPage() {
 
       {/* Search */}
       <div className="relative max-w-md">
-        <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+        <Search className="w-3.5 h-3.5 text-[var(--vf-text-subtle)] absolute left-3 top-1/2 -translate-y-1/2" />
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search projects by title, voice, or engine..."
-          className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-[#7C5CFF] focus:outline-none"
+          className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface)] pl-9 pr-3 py-2 text-xs text-[var(--vf-text)] placeholder:text-[var(--vf-text-subtle)] focus:border-[var(--vf-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-accent)]/40"
         />
       </div>
 
       {importError && (
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2.5 text-xs text-rose-700 dark:text-rose-300">
+        <div className="rounded-lg border border-[var(--vf-danger)]/35 bg-[var(--vf-danger)]/10 px-4 py-2.5 text-xs text-[var(--vf-danger)]">
           {importError}
         </div>
       )}
       {error && (
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2.5 text-xs text-rose-700 dark:text-rose-300">
+        <div className="rounded-lg border border-[var(--vf-danger)]/35 bg-[var(--vf-danger)]/10 px-4 py-2.5 text-xs text-[var(--vf-danger)]">
           {error}
         </div>
       )}
       {notice && (
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-xs text-emerald-700 dark:text-emerald-300">
+        <div className="rounded-lg border border-[var(--vf-success)]/35 bg-[var(--vf-success)]/10 px-4 py-2.5 text-xs text-[var(--vf-success)]">
           {notice}
         </div>
       )}
 
       {loading && projects.length === 0 ? (
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] p-8 text-center text-xs text-slate-500 dark:text-slate-400">
+        <div className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-8 text-center text-xs font-mono text-[var(--vf-text-muted)]">
           Loading saved projects from IndexedDB...
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-10 text-center space-y-2">
-          <FolderOpen className="w-8 h-8 text-slate-400 mx-auto" />
-          <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
+        <div className="rounded-lg border border-dashed border-[var(--vf-border)] bg-[var(--vf-surface)] p-10 text-center space-y-2">
+          <FolderOpen className="w-8 h-8 text-[var(--vf-text-subtle)] mx-auto" />
+          <div className="text-sm font-medium text-[var(--vf-text)]">
             {projects.length === 0 ? 'No saved projects yet' : 'No matching projects'}
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-[var(--vf-text-muted)]">
             Create a narration in Text to Speech Studio or import a `.voiceforge.json` file.
           </p>
         </div>
@@ -245,49 +245,52 @@ export function ProjectsPage() {
             return (
               <div
                 key={project.id}
-                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] p-4 space-y-3 flex flex-col justify-between"
+                className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4 space-y-3 flex flex-col justify-between"
               >
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+                      <h2 className="text-sm font-semibold text-[var(--vf-text)] truncate">
                         {project.name}
                       </h2>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                        Voice: <strong className="text-slate-700 dark:text-slate-300">{voiceName}</strong> ·
-                        Engine: <code className="text-[#7C5CFF]">{project.engineId}</code>
+                      <div className="text-[11px] text-[var(--vf-text-muted)]">
+                        Voice: <strong className="text-[var(--vf-text)]">{voiceName}</strong> ·
+                        Engine:{' '}
+                        <code className="font-mono text-[var(--vf-accent)]">{project.engineId}</code>
                       </div>
                     </div>
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400 shrink-0">
+                    <span className="text-[11px] font-mono tabular-nums text-[var(--vf-text-subtle)] shrink-0">
                       {new Date(project.updatedAt).toLocaleDateString()}
                     </span>
                   </div>
 
-                  <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2">
+                  <p className="rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] px-2.5 py-2 text-xs text-[var(--vf-text-muted)] line-clamp-2">
                     {project.scriptText || '(Empty script)'}
                   </p>
 
-                  {/* Progress */}
-                  <div className="space-y-1 pt-1">
+                  {/* Queue Progress Well */}
+                  <div className="space-y-1.5 pt-0.5">
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-slate-600 dark:text-slate-400">
-                        Chunks: <strong className="text-slate-900 dark:text-slate-100">{completed}</strong> / {total} ({pct}%)
+                      <span className="font-mono tabular-nums text-[var(--vf-text-muted)]">
+                        Chunks: <strong className="text-[var(--vf-text)]">{completed}</strong> / {total} ({pct}%)
                       </span>
                       {failed > 0 && (
-                        <span className="text-rose-500 font-medium">{failed} failed</span>
+                        <span className="font-mono tabular-nums text-[var(--vf-danger)] font-medium">
+                          {failed} failed
+                        </span>
                       )}
                     </div>
-                    <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                    <div className="w-full h-1.5 rounded-sm bg-[var(--vf-bg)] border border-[var(--vf-border-subtle)] overflow-hidden">
                       <div
                         className={`h-full ${
-                          failed > 0 ? 'bg-amber-500' : 'bg-[#7C5CFF]'
+                          failed > 0 ? 'bg-[var(--vf-warning)]' : 'bg-[var(--vf-accent)]'
                         }`}
                         style={{ width: `${pct}%` }}
                       />
                     </div>
                     {completed > 0 && pendingOrCancelled > 0 && (
-                      <div className="inline-flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-300 pt-0.5">
-                        <AlertTriangle className="w-3 h-3" />
+                      <div className="inline-flex items-center gap-1.5 text-[11px] text-[var(--vf-warning)] pt-0.5">
+                        <AlertTriangle className="w-3 h-3 shrink-0" />
                         Interrupted job ({pendingOrCancelled} remaining) — ready to resume in Studio
                       </div>
                     )}
@@ -295,11 +298,11 @@ export function ProjectsPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="pt-2 border-t border-slate-200 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
+                <div className="pt-2.5 border-t border-[var(--vf-border-subtle)] flex flex-wrap items-center justify-between gap-2">
                   <button
                     type="button"
                     onClick={() => void handleOpenInStudio(project)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#7C5CFF] text-white hover:bg-[#6A48F5] transition"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-[var(--vf-accent)] text-white hover:bg-[var(--vf-accent-hover)] transition-colors cursor-pointer"
                   >
                     <Play className="w-3.5 h-3.5" />
                     {completed > 0 && pendingOrCancelled > 0 ? 'Resume in Studio' : 'Open in Studio'}
@@ -309,7 +312,7 @@ export function ProjectsPage() {
                     <button
                       type="button"
                       onClick={() => void handleDuplicate(project)}
-                      className="p-1.5 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-slate-800 transition"
+                      className="p-1.5 rounded-md text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:bg-[var(--vf-surface-elevated)] transition-colors cursor-pointer"
                       title="Duplicate project"
                     >
                       <Copy className="w-3.5 h-3.5" />
@@ -317,7 +320,7 @@ export function ProjectsPage() {
                     <button
                       type="button"
                       onClick={() => handleExportJson(project)}
-                      className="p-1.5 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-slate-800 transition"
+                      className="p-1.5 rounded-md text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:bg-[var(--vf-surface-elevated)] transition-colors cursor-pointer"
                       title="Export Project JSON"
                     >
                       <Download className="w-3.5 h-3.5" />
@@ -336,14 +339,14 @@ export function ProjectsPage() {
                               setNotice(`Deleted "${project.name}" and its cached audio chunks.`);
                             });
                           }}
-                          className="px-2 py-1 rounded bg-rose-600 text-white text-[11px] font-semibold hover:bg-rose-700"
+                          className="px-2 py-1 rounded-md bg-rose-600 text-white text-[11px] font-semibold hover:bg-rose-500 cursor-pointer"
                         >
                           Confirm
                         </button>
                         <button
                           type="button"
                           onClick={() => setConfirmDeleteId(null)}
-                          className="px-2 py-1 rounded border border-slate-600 text-[11px]"
+                          className="px-2 py-1 rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] text-[11px] text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] cursor-pointer"
                         >
                           Cancel
                         </button>
@@ -352,7 +355,7 @@ export function ProjectsPage() {
                       <button
                         type="button"
                         onClick={() => setConfirmDeleteId(project.id)}
-                        className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition"
+                        className="p-1.5 rounded-md text-[var(--vf-text-muted)] hover:text-[var(--vf-danger)] hover:bg-[var(--vf-danger)]/10 transition-colors cursor-pointer"
                         title="Delete project and audio chunks"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

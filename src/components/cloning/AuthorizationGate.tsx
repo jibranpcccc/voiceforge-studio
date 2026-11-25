@@ -55,28 +55,28 @@ export function AuthorizationGate({
 }: AuthorizationGateProps) {
   return (
     <div
-      className={`rounded-xl border p-4 space-y-3.5 transition-colors ${
+      className={`rounded-lg border p-4 space-y-3.5 transition-colors ${
         confirmed
-          ? 'border-emerald-500/40 bg-emerald-500/5'
-          : 'border-amber-500/40 bg-amber-500/5'
+          ? 'border-[var(--vf-success)]/45 bg-[var(--vf-success)]/5'
+          : 'border-[var(--vf-warning)]/45 bg-[var(--vf-warning)]/5'
       }`}
     >
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[var(--vf-border-subtle)]">
         <div className="flex items-center gap-2">
           {confirmed ? (
-            <ShieldCheck className="h-4 w-4 text-emerald-500" />
+            <ShieldCheck className="h-4 w-4 text-[var(--vf-success)]" />
           ) : (
-            <Lock className="h-4 w-4 text-amber-500" />
+            <Lock className="h-4 w-4 text-[var(--vf-warning)]" />
           )}
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+          <h3 className="text-sm font-semibold text-[var(--vf-text)]">
             Authorized Voice Use Confirmation
           </h3>
         </div>
         <span
-          className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${
+          className={`rounded-sm px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider font-semibold border ${
             confirmed
-              ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border-emerald-500/30'
-              : 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-500/30'
+              ? 'bg-[var(--vf-success)]/15 text-[var(--vf-success)] border-[var(--vf-success)]/35'
+              : 'bg-[var(--vf-warning)]/15 text-[var(--vf-warning)] border-[var(--vf-warning)]/35'
           }`}
         >
           {confirmed ? 'Confirmed (Self-Attested)' : 'Required Before Encoding'}
@@ -86,7 +86,7 @@ export function AuthorizationGate({
       <div className="space-y-1.5">
         <label
           htmlFor="auth-source-basis"
-          className="block text-xs font-medium text-slate-700 dark:text-slate-300"
+          className="block text-[11px] font-mono uppercase tracking-wider font-medium text-[var(--vf-text-muted)]"
         >
           Authorization Basis
         </label>
@@ -95,7 +95,7 @@ export function AuthorizationGate({
           value={sourceBasis}
           disabled={disabled}
           onChange={(e) => onSourceBasisChange(e.target.value as AuthorizationSourceBasis)}
-          className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0B0D12] px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#7C5CFF]"
+          className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-3 py-2 text-xs text-[var(--vf-text)] focus:outline-none focus:border-[var(--vf-accent)] focus:ring-1 focus:ring-[var(--vf-accent)]/40"
         >
           {SOURCE_BASIS_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -105,29 +105,29 @@ export function AuthorizationGate({
         </select>
       </div>
 
-      <label className="flex items-start gap-2.5 cursor-pointer select-none rounded-lg border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#0B0D12]/70 p-3">
+      <label className="flex items-start gap-2.5 cursor-pointer select-none rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] p-3 hover:border-[var(--vf-text-subtle)] transition-colors">
         <input
           type="checkbox"
           checked={confirmed}
           disabled={disabled}
           onChange={(e) => onConfirmedChange(e.target.checked)}
-          className="mt-0.5 h-4 w-4 rounded border-slate-400 dark:border-slate-600 text-[#7C5CFF] focus:ring-[#7C5CFF]"
+          className="mt-0.5 h-4 w-4 rounded border-[var(--vf-border)] accent-[var(--vf-accent)]"
         />
-        <span className="text-xs leading-relaxed text-slate-700 dark:text-slate-200">
+        <span className="text-xs leading-relaxed text-[var(--vf-text)]">
           {ATTESTATION_TEXT}
         </span>
       </label>
 
-      <div className="flex items-start gap-2 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-slate-100/80 dark:bg-[#0B0D12]/80 p-2.5 text-[11px] text-slate-600 dark:text-slate-400">
+      <div className="flex items-start gap-2 rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-surface-elevated)] p-2.5 text-[11px] text-[var(--vf-text-muted)]">
         {confirmed ? (
-          <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5 text-slate-500" />
+          <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5 text-[var(--vf-text-subtle)]" />
         ) : (
-          <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-500" />
+          <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-[var(--vf-warning)]" />
         )}
         <p>
-          <strong>Client-side self-attestation notice:</strong> Checking this box records a
+          <strong className="text-[var(--vf-text)]">Client-side self-attestation notice:</strong> Checking this box records a
           local self-attestation (<code className="font-mono">client-self-attested</code>) in
-          your browser&apos;s IndexedDB profile. It is <strong>not</strong> independently
+          your browser&apos;s IndexedDB profile. It is <strong className="text-[var(--vf-text)]">not</strong> independently
           verified and does not replace legal consent or licensing agreements.
         </p>
       </div>

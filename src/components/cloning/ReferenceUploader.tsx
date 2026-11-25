@@ -1,9 +1,9 @@
 import { useCallback, useId, useRef, useState } from 'react';
 import {
   AlertCircle,
+  AudioLines,
   Film,
   Loader2,
-  Music,
   ShieldCheck,
   Upload,
   X,
@@ -197,16 +197,17 @@ export function ReferenceUploader({
 
   return (
     <div className="space-y-3">
+      {/* Signal-Capture Patch Bay */}
       <div
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        className={`relative rounded-xl border-2 border-dashed transition-colors ${
-          compact ? 'p-4' : 'p-6'
+        className={`relative rounded-lg border border-dashed transition-colors ${
+          compact ? 'p-4' : 'p-5'
         } ${
           isDragging
-            ? 'border-[#7C5CFF] bg-[#7C5CFF]/10'
-            : 'border-slate-300 dark:border-slate-700/80 bg-slate-50/80 dark:bg-[#0B0D12]/60 hover:border-slate-400 dark:hover:border-slate-600'
+            ? 'border-[var(--vf-accent)] bg-[var(--vf-accent-soft)]'
+            : 'border-[var(--vf-border)] bg-[var(--vf-bg)] hover:border-[var(--vf-text-subtle)]'
         } ${disabled ? 'opacity-60 pointer-events-none' : ''}`}
       >
         <input
@@ -221,15 +222,15 @@ export function ReferenceUploader({
         />
 
         {processingLabel ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-2 text-center">
-            <Loader2 className="h-7 w-7 animate-spin text-[#7C5CFF]" />
-            <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
+          <div className="flex flex-col items-center justify-center gap-3 py-3 text-center">
+            <Loader2 className="h-6 w-6 animate-spin text-[var(--vf-accent)]" />
+            <p className="text-xs font-mono font-medium text-[var(--vf-text)]">
               {processingLabel}
             </p>
             <button
               type="button"
               onClick={handleCancelProcessing}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-800"
+              className="inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-3 py-1.5 text-xs font-medium text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] cursor-pointer"
             >
               <X className="h-3.5 w-3.5" />
               Cancel
@@ -237,18 +238,19 @@ export function ReferenceUploader({
           </div>
         ) : (
           <div className="flex flex-col items-center text-center gap-3">
-            <div className="h-11 w-11 rounded-xl bg-[#7C5CFF]/15 border border-[#7C5CFF]/30 flex items-center justify-center text-[#7C5CFF]">
-              <Upload className="h-5 w-5" />
+            <div className="h-10 w-10 rounded-md bg-[var(--vf-surface-elevated)] border border-[var(--vf-border)] flex items-center justify-center text-[var(--vf-accent)]">
+              <Upload className="h-4 w-4" />
             </div>
+
             <div className="space-y-1">
-              <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+              <p className="text-sm font-medium text-[var(--vf-text)]">
                 Drop reference audio or video files here
               </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-[var(--vf-text-muted)]">
                 Or{' '}
                 <label
                   htmlFor={inputId}
-                  className="cursor-pointer font-semibold text-[#7C5CFF] hover:underline"
+                  className="cursor-pointer font-semibold text-[var(--vf-accent)] hover:underline"
                 >
                   browse from your device
                 </label>{' '}
@@ -256,18 +258,18 @@ export function ReferenceUploader({
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] text-slate-600 dark:text-slate-400">
-              <span className="inline-flex items-center gap-1 rounded-md bg-slate-200/70 dark:bg-slate-800/80 px-2 py-0.5">
-                <Music className="h-3 w-3 text-[#7C5CFF]" />
+            <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] font-mono text-[var(--vf-text-muted)]">
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-surface)] px-2 py-0.5">
+                <AudioLines className="h-3 w-3 text-[var(--vf-accent)]" />
                 WAV, MP3, M4A, FLAC, OGG
               </span>
-              <span className="inline-flex items-center gap-1 rounded-md bg-slate-200/70 dark:bg-slate-800/80 px-2 py-0.5">
-                <Film className="h-3 w-3 text-emerald-500" />
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-surface)] px-2 py-0.5">
+                <Film className="h-3 w-3 text-[var(--vf-success)]" />
                 MP4, WebM, MOV (local audio extract)
               </span>
             </div>
 
-            <p className="inline-flex items-center gap-1.5 text-[11px] text-emerald-700 dark:text-emerald-400">
+            <p className="inline-flex items-center gap-1.5 text-[11px] text-[var(--vf-success)]">
               <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
               Decoded 100% locally in your browser — nothing is uploaded.
             </p>
@@ -278,15 +280,15 @@ export function ReferenceUploader({
       {errorMessage && (
         <div
           role="alert"
-          className="flex items-start gap-2.5 rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-700 dark:text-rose-200"
+          className="flex items-start gap-2.5 rounded-md border border-[var(--vf-danger)]/35 bg-[var(--vf-danger)]/10 p-3 text-xs text-[var(--vf-danger)]"
         >
-          <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-rose-500" />
+          <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
           <div className="flex-1">{errorMessage}</div>
           <button
             type="button"
             onClick={() => setErrorMessage(null)}
             aria-label="Dismiss upload error"
-            className="text-rose-500 hover:text-rose-400"
+            className="opacity-80 hover:opacity-100 cursor-pointer"
           >
             <X className="h-3.5 w-3.5" />
           </button>

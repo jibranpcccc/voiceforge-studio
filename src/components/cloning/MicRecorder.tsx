@@ -293,121 +293,132 @@ export function MicRecorder({
 
   const levelBadge =
     rmsDb >= -4 || clippedEver
-      ? { label: 'Hot / Clipping Risk', cls: 'text-rose-400 bg-rose-500/15 border-rose-500/30' }
+      ? {
+          label: 'Hot / Clipping Risk',
+          cls: 'text-[var(--vf-danger)] bg-[var(--vf-danger)]/15 border-[var(--vf-danger)]/35',
+        }
       : rmsDb >= -28
-        ? { label: 'Healthy Level', cls: 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30' }
-        : { label: 'Quiet Input', cls: 'text-amber-400 bg-amber-500/15 border-amber-500/30' };
+        ? {
+            label: 'Healthy Level',
+            cls: 'text-[var(--vf-success)] bg-[var(--vf-success)]/15 border-[var(--vf-success)]/35',
+          }
+        : {
+            label: 'Quiet Input',
+            cls: 'text-[var(--vf-warning)] bg-[var(--vf-warning)]/15 border-[var(--vf-warning)]/35',
+          };
 
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-800/90 bg-slate-50/80 dark:bg-[#0B0D12]/60 p-4 space-y-4">
+    <div className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-bg)] p-4 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div
-            className={`h-9 w-9 rounded-lg flex items-center justify-center border ${
+            className={`h-9 w-9 rounded-md flex items-center justify-center border ${
               isRecording
-                ? 'bg-rose-500/20 border-rose-500/40 text-rose-400 animate-pulse'
-                : 'bg-[#7C5CFF]/15 border-[#7C5CFF]/30 text-[#7C5CFF]'
+                ? 'bg-[var(--vf-danger)]/15 border-[var(--vf-danger)]/45 text-[var(--vf-danger)] animate-pulse'
+                : 'bg-[var(--vf-accent-soft)] border-[var(--vf-accent)]/35 text-[var(--vf-accent)]'
             }`}
           >
             <Mic className="h-4 w-4" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+            <h3 className="text-sm font-semibold text-[var(--vf-text)]">
               Live Microphone Capture
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Target {minRecommendedSec}–{maxRecommendedSec}s of natural single-speaker speech
+            <p className="text-xs text-[var(--vf-text-muted)]">
+              Target <span className="font-mono tabular-nums">{minRecommendedSec}–{maxRecommendedSec}s</span> of natural single-speaker speech
             </p>
           </div>
         </div>
 
-        <label className="inline-flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300 cursor-pointer select-none">
+        <label className="inline-flex items-center gap-2 text-xs text-[var(--vf-text-muted)] cursor-pointer select-none">
           <input
             type="checkbox"
             checked={echoCancellation}
             disabled={isRecording || disabled}
             onChange={(e) => setEchoCancellation(e.target.checked)}
-            className="rounded border-slate-400 dark:border-slate-600 text-[#7C5CFF] focus:ring-[#7C5CFF]"
+            className="h-3.5 w-3.5 rounded border-[var(--vf-border)] accent-[var(--vf-accent)]"
           />
           Browser Echo Cancellation
         </label>
       </div>
 
       {/* Reading prompt helper */}
-      <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] p-3 space-y-1.5">
+      <div className="rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-surface)] p-3 space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-            <Waves className="h-3.5 w-3.5 text-[#7C5CFF]" />
+          <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-[var(--vf-text-muted)] flex items-center gap-1.5">
+            <Waves className="h-3.5 w-3.5 text-[var(--vf-accent)]" />
             Sample Reading Script
           </span>
           <button
             type="button"
             onClick={() => setPromptIndex((prev) => (prev + 1) % SAMPLE_PROMPTS.length)}
-            className="text-[11px] font-medium text-[#7C5CFF] hover:underline"
+            className="text-[11px] font-medium text-[var(--vf-accent)] hover:underline cursor-pointer"
           >
             Next Prompt
           </button>
         </div>
-        <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300 italic">
+        <p className="text-xs leading-relaxed text-[var(--vf-text)] italic">
           &ldquo;{SAMPLE_PROMPTS[promptIndex]}&rdquo;
         </p>
       </div>
 
-      {/* Live RMS level meter & timer */}
-      <div className="space-y-2">
+      {/* Live RMS VU meter & transport timer */}
+      <div className="rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-surface)] p-3 space-y-2">
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
-            <Volume2 className="h-3.5 w-3.5 text-slate-400" />
-            <span className="font-mono text-slate-700 dark:text-slate-300">
+            <Volume2 className="h-3.5 w-3.5 text-[var(--vf-text-subtle)]" />
+            <span className="font-mono tabular-nums text-[var(--vf-text)]">
               RMS {rmsDb > -89 ? `${rmsDb.toFixed(1)} dBFS` : '-∞ dBFS'}
             </span>
             {isRecording && (
-              <span className={`px-2 py-0.5 rounded-full border text-[11px] font-medium ${levelBadge.cls}`}>
+              <span
+                className={`px-2 py-0.5 rounded-sm border text-[10px] font-mono uppercase tracking-wider font-semibold ${levelBadge.cls}`}
+              >
                 {levelBadge.label}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             {isRecording && elapsedSec >= minRecommendedSec && (
-              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-500 font-medium">
+              <span className="inline-flex items-center gap-1 text-[11px] text-[var(--vf-success)] font-medium">
                 <CheckCircle2 className="h-3 w-3" />
                 Min length reached
               </span>
             )}
-            <span className="font-mono text-sm font-semibold text-slate-900 dark:text-slate-100 tabular-nums">
+            <span className="font-mono text-sm font-semibold text-[var(--vf-text)] tabular-nums">
               {formatTimer(elapsedSec)}
             </span>
           </div>
         </div>
 
-        <div className="relative h-2.5 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+        <div className="relative h-2 w-full rounded-sm bg-[var(--vf-bg)] border border-[var(--vf-border-subtle)] overflow-hidden">
           <div
             className={`h-full transition-all duration-75 ${
               rmsDb >= -4
-                ? 'bg-rose-500'
+                ? 'bg-[var(--vf-danger)]'
                 : rmsDb >= -18
-                  ? 'bg-emerald-500'
-                  : 'bg-[#7C5CFF]'
+                  ? 'bg-[var(--vf-success)]'
+                  : 'bg-[var(--vf-accent)]'
             }`}
             style={{ width: `${meterPercent}%` }}
           />
           {isRecording && (
             <div
-              className="absolute top-0 bottom-0 w-0.5 bg-white/90"
+              className="absolute top-0 bottom-0 w-0.5 bg-[var(--vf-text)]"
               style={{ left: `${peakPercent}%` }}
             />
           )}
         </div>
       </div>
 
-      {/* Record / Stop controls */}
-      <div className="flex items-center justify-between gap-3">
+      {/* Tactile Transport Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-[var(--vf-border-subtle)]">
         {!isRecording ? (
           <button
             type="button"
             onClick={() => void startRecording()}
             disabled={disabled || isFinalizing}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#7C5CFF] hover:bg-[#6a48f5] disabled:opacity-50 px-4 py-2 text-xs font-semibold text-white transition-colors"
+            className="inline-flex items-center gap-2 rounded-md bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] disabled:opacity-50 px-4 py-2 text-xs font-semibold text-white transition-colors cursor-pointer"
           >
             <Mic className="h-3.5 w-3.5" />
             {isFinalizing ? 'Saving PCM...' : 'Start Microphone Recording'}
@@ -416,14 +427,14 @@ export function MicRecorder({
           <button
             type="button"
             onClick={() => void stopRecording()}
-            className="inline-flex items-center gap-2 rounded-lg bg-rose-600 hover:bg-rose-500 px-4 py-2 text-xs font-semibold text-white transition-colors"
+            className="inline-flex items-center gap-2 rounded-md bg-rose-600 hover:bg-rose-500 px-4 py-2 text-xs font-semibold text-white transition-colors cursor-pointer"
           >
             <Square className="h-3.5 w-3.5 fill-current" />
             Stop &amp; Add Clip
           </button>
         )}
 
-        <span className="text-[11px] text-slate-500 dark:text-slate-400">
+        <span className="text-[11px] font-mono text-[var(--vf-text-subtle)]">
           Direct Web Audio PCM capture (no lossy re-encoding)
         </span>
       </div>
@@ -431,9 +442,9 @@ export function MicRecorder({
       {errorMessage && (
         <div
           role="alert"
-          className="flex items-start gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 p-2.5 text-xs text-rose-700 dark:text-rose-200"
+          className="flex items-start gap-2 rounded-md border border-[var(--vf-danger)]/35 bg-[var(--vf-danger)]/10 p-2.5 text-xs text-[var(--vf-danger)]"
         >
-          <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-rose-500" />
+          <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
           <span>{errorMessage}</span>
         </div>
       )}

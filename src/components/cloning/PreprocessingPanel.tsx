@@ -1,4 +1,4 @@
-import { RotateCcw, Sliders, Sparkles } from 'lucide-react';
+import { AudioLines, RotateCcw, SlidersHorizontal } from 'lucide-react';
 import {
   DEFAULT_PREPROCESSING_OPTIONS,
   type ReferencePreprocessingOptions,
@@ -27,17 +27,23 @@ function ToggleRow({
   onToggle,
 }: ToggleRowProps) {
   return (
-    <label className="flex items-start justify-between gap-3 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-slate-50/60 dark:bg-[#0B0D12]/50 p-2.5 cursor-pointer hover:border-slate-300 dark:hover:border-slate-700">
+    <label
+      className={`flex items-start justify-between gap-3 rounded-md border p-2.5 cursor-pointer transition-colors ${
+        checked
+          ? 'border-[var(--vf-accent)]/45 bg-[var(--vf-accent-soft)]'
+          : 'border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] hover:border-[var(--vf-border)]'
+      }`}
+    >
       <div className="space-y-0.5">
-        <div className="text-xs font-medium text-slate-900 dark:text-slate-100">{label}</div>
-        <div className="text-[11px] text-slate-500 dark:text-slate-400">{description}</div>
+        <div className="text-xs font-medium text-[var(--vf-text)]">{label}</div>
+        <div className="text-[11px] text-[var(--vf-text-muted)]">{description}</div>
       </div>
       <input
         type="checkbox"
         checked={checked}
         disabled={disabled}
         onChange={(e) => onToggle(e.target.checked)}
-        className="mt-0.5 h-4 w-4 rounded border-slate-400 dark:border-slate-600 text-[#7C5CFF] focus:ring-[#7C5CFF]"
+        className="mt-0.5 h-4 w-4 rounded border-[var(--vf-border)] accent-[var(--vf-accent)]"
       />
     </label>
   );
@@ -61,24 +67,24 @@ export function PreprocessingPanel({
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] p-4 space-y-3.5">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <div className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4 space-y-3.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-[var(--vf-border-subtle)]">
         <div className="flex items-center gap-2">
-          <Sliders className="h-4 w-4 text-[#7C5CFF]" />
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+          <SlidersHorizontal className="h-4 w-4 text-[var(--vf-accent)]" />
+          <h3 className="text-sm font-semibold text-[var(--vf-text)]">
             Non-Destructive Preprocessing
           </h3>
         </div>
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#7C5CFF]/15 border border-[#7C5CFF]/30 px-2 py-0.5 text-[11px] font-medium text-[#7C5CFF]">
-            <Sparkles className="h-3 w-3" />
+          <span className="inline-flex items-center gap-1 rounded-sm bg-[var(--vf-accent-soft)] border border-[var(--vf-accent)]/35 px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider font-medium text-[var(--vf-accent)]">
+            <AudioLines className="h-3 w-3" />
             Original Preserved
           </span>
           <button
             type="button"
             onClick={resetDefaults}
             disabled={disabled}
-            className="inline-flex items-center gap-1 rounded-lg border border-slate-300 dark:border-slate-700 px-2.5 py-1 text-[11px] font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-2.5 py-1 text-[11px] font-medium text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] disabled:opacity-50 cursor-pointer"
           >
             <RotateCcw className="h-3 w-3" />
             Reset Defaults
@@ -136,12 +142,12 @@ export function PreprocessingPanel({
         />
       </div>
 
-      {/* Optional Loudness Target & Duration Cap Controls */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-slate-200/80 dark:border-slate-800">
-        <div className="space-y-1">
+      {/* Loudness Target & Duration Cap Controls */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-[var(--vf-border-subtle)]">
+        <div className="rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] p-2.5 space-y-1.5">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-600 dark:text-slate-300">Target Loudness</span>
-            <span className="font-mono text-slate-800 dark:text-slate-200">
+            <span className="text-[var(--vf-text-muted)]">Target Loudness</span>
+            <span className="font-mono tabular-nums font-semibold text-[var(--vf-text)]">
               {options.targetLufs} LUFS
             </span>
           </div>
@@ -153,14 +159,14 @@ export function PreprocessingPanel({
             value={options.targetLufs}
             disabled={disabled || !options.normalizeLoudness}
             onChange={(e) => update({ targetLufs: Number(e.target.value) })}
-            className="w-full accent-[#7C5CFF] disabled:opacity-40"
+            className="w-full accent-[var(--vf-accent)] disabled:opacity-40"
           />
         </div>
 
-        <div className="space-y-1">
+        <div className="rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] p-2.5 space-y-1.5">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-600 dark:text-slate-300">Max Reference Cap</span>
-            <span className="font-mono text-slate-800 dark:text-slate-200">
+            <span className="text-[var(--vf-text-muted)]">Max Reference Cap</span>
+            <span className="font-mono tabular-nums font-semibold text-[var(--vf-text)]">
               {options.maxDurationSec}s
             </span>
           </div>
@@ -172,7 +178,7 @@ export function PreprocessingPanel({
             value={Math.min(Math.max(10, engineMaxDurationSec), options.maxDurationSec)}
             disabled={disabled}
             onChange={(e) => update({ maxDurationSec: Number(e.target.value) })}
-            className="w-full accent-[#7C5CFF]"
+            className="w-full accent-[var(--vf-accent)]"
           />
         </div>
       </div>

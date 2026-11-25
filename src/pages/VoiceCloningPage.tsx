@@ -2,18 +2,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertCircle,
   ArrowRight,
+  AudioLines,
   CheckCircle2,
   Cpu,
+  Disc3,
   Download,
   Film,
   Info,
   Loader2,
   Mic,
-  Music,
   Play,
   Radio,
   Scissors,
-  Sparkles,
   Square,
   Trash2,
   Upload,
@@ -699,14 +699,14 @@ export function VoiceCloningPage() {
     !isInitializingEngine;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-10">
+    <div className="max-w-6xl mx-auto space-y-5 pb-10">
       {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4 pb-3 border-b border-[var(--vf-border-subtle)]">
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <h1 className="text-xl font-semibold tracking-tight text-[var(--vf-text)]">
             Voice Cloning Lab
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
+          <p className="text-xs text-[var(--vf-text-muted)]">
             Capture or import authorized speech, inspect acoustic quality non-destructively, and
             encode engine-scoped voice conditioning locally in your browser.
           </p>
@@ -717,7 +717,7 @@ export function VoiceCloningPage() {
           onClick={() => {
             window.location.hash = '#/voices';
           }}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#121622] px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+          className="inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-3 py-1.5 text-xs font-semibold text-[var(--vf-text)] hover:border-[var(--vf-accent)]/50 transition-colors cursor-pointer"
         >
           My Voices
           <ArrowRight className="h-3.5 w-3.5" />
@@ -725,15 +725,15 @@ export function VoiceCloningPage() {
       </div>
 
       {/* Step 1: Engine & Conditioning Rule */}
-      <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] p-4 space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
+      <section className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[var(--vf-border-subtle)]">
           <div className="flex items-center gap-2">
-            <Cpu className="h-4 w-4 text-[#7C5CFF]" />
-            <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+            <Cpu className="h-4 w-4 text-[var(--vf-accent)]" />
+            <h2 className="text-sm font-semibold text-[var(--vf-text)]">
               1. Target Voice Cloning Engine
             </h2>
           </div>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400">
+          <span className="text-[11px] font-mono text-[var(--vf-text-muted)]">
             Conditioning embeddings are strictly engine &amp; revision scoped
           </span>
         </div>
@@ -758,31 +758,31 @@ export function VoiceCloningPage() {
                     maxDurationSec: Math.min(prev.maxDurationSec, spec.maxSupportedSec),
                   }));
                 }}
-                className={`text-left rounded-xl border p-3.5 transition-all ${
+                className={`text-left rounded-md border p-3.5 transition-colors cursor-pointer ${
                   selected
-                    ? 'border-[#7C5CFF] bg-[#7C5CFF]/10 ring-1 ring-[#7C5CFF]/40'
-                    : 'border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-[#0B0D12]/60 hover:border-slate-300 dark:hover:border-slate-700'
+                    ? 'border-[var(--vf-accent)] bg-[var(--vf-accent-soft)]'
+                    : 'border-[var(--vf-border)] bg-[var(--vf-bg)] hover:border-[var(--vf-text-subtle)]'
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  <span className="text-sm font-semibold text-[var(--vf-text)]">
                     {spec.label}
                   </span>
-                  <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                  <span className="text-[11px] font-mono tabular-nums text-[var(--vf-text-muted)]">
                     {spec.sizeLabel}
                   </span>
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
-                  <span className="rounded-md bg-slate-200/70 dark:bg-slate-800 px-2 py-0.5 text-slate-700 dark:text-slate-300">
+                  <span className="rounded-sm border border-[var(--vf-border-subtle)] bg-[var(--vf-surface)] px-2 py-0.5 font-mono tabular-nums text-[var(--vf-text-muted)]">
                     Ideal ref: {spec.minRecommendedSec}–{spec.maxRecommendedSec}s
                   </span>
                   <span
-                    className={`rounded-md px-2 py-0.5 font-medium ${
+                    className={`rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider font-semibold ${
                       initialized
-                        ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300'
+                        ? 'border-[var(--vf-success)]/35 bg-[var(--vf-success)]/15 text-[var(--vf-success)]'
                         : cached
-                          ? 'bg-sky-500/15 text-sky-600 dark:text-sky-300'
-                          : 'bg-amber-500/15 text-amber-600 dark:text-amber-300'
+                          ? 'border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] text-[var(--vf-text)]'
+                          : 'border-[var(--vf-warning)]/35 bg-[var(--vf-warning)]/15 text-[var(--vf-warning)]'
                     }`}
                   >
                     {initialized
@@ -792,7 +792,7 @@ export function VoiceCloningPage() {
                         : 'Download Required'}
                   </span>
                   {hw && (
-                    <span className="rounded-md bg-slate-200/70 dark:bg-slate-800 px-2 py-0.5 text-slate-600 dark:text-slate-300">
+                    <span className="rounded-sm border border-[var(--vf-border-subtle)] bg-[var(--vf-surface)] px-2 py-0.5 font-mono text-[var(--vf-text-muted)]">
                       Backend: {hw.recommendedBackend.toUpperCase()}
                     </span>
                   )}
@@ -803,15 +803,16 @@ export function VoiceCloningPage() {
         </div>
 
         {/* Engine Conditioning Rule Disclosure */}
-        <div className="flex items-start gap-2 rounded-lg border border-indigo-500/25 bg-indigo-500/5 p-3 text-xs text-slate-700 dark:text-slate-300">
-          <Info className="h-4 w-4 shrink-0 mt-0.5 text-[#7C5CFF]" />
+        <div className="flex items-start gap-2 rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] p-3 text-xs text-[var(--vf-text-muted)]">
+          <Info className="h-4 w-4 shrink-0 mt-0.5 text-[var(--vf-accent)]" />
           <div>
-            <strong>Engine Conditioning Rule:</strong> {engineSpec.conditioningSummary}
+            <strong className="text-[var(--vf-text)]">Engine Conditioning Rule:</strong>{' '}
+            {engineSpec.conditioningSummary}
           </div>
         </div>
 
         {activeHwReport && activeHwReport.warnings.length > 0 && (
-          <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">
+          <div className="rounded-md border border-[var(--vf-warning)]/35 bg-[var(--vf-warning)]/10 px-3 py-2 text-xs text-[var(--vf-warning)]">
             {activeHwReport.warnings[0]}
           </div>
         )}
@@ -819,19 +820,19 @@ export function VoiceCloningPage() {
 
       {/* Step 2: Audio Input Sources + Session Clips */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        <div className="lg:col-span-7 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] p-4 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+        <div className="lg:col-span-7 rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[var(--vf-border-subtle)]">
+            <h2 className="text-sm font-semibold text-[var(--vf-text)]">
               2. Add Reference Audio Clips
             </h2>
-            <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-[#0B0D12] p-0.5">
+            <div className="inline-flex rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] p-0.5">
               <button
                 type="button"
                 onClick={() => setInputTab('upload')}
-                className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
+                className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1 text-xs font-medium transition-colors cursor-pointer ${
                   inputTab === 'upload'
-                    ? 'bg-[#7C5CFF] text-white'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                    ? 'bg-[var(--vf-accent)] text-white'
+                    : 'text-[var(--vf-text-muted)] hover:text-[var(--vf-text)]'
                 }`}
               >
                 <Upload className="h-3.5 w-3.5" />
@@ -840,10 +841,10 @@ export function VoiceCloningPage() {
               <button
                 type="button"
                 onClick={() => setInputTab('mic')}
-                className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
+                className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1 text-xs font-medium transition-colors cursor-pointer ${
                   inputTab === 'mic'
-                    ? 'bg-[#7C5CFF] text-white'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                    ? 'bg-[var(--vf-accent)] text-white'
+                    : 'text-[var(--vf-text-muted)] hover:text-[var(--vf-text)]'
                 }`}
               >
                 <Mic className="h-3.5 w-3.5" />
@@ -864,18 +865,18 @@ export function VoiceCloningPage() {
         </div>
 
         {/* Session Clips Manager */}
-        <div className="lg:col-span-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+        <div className="lg:col-span-5 rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4 space-y-3">
+          <div className="flex items-center justify-between pb-2 border-b border-[var(--vf-border-subtle)]">
+            <h2 className="text-sm font-semibold text-[var(--vf-text)]">
               Session Clips ({clips.length})
             </h2>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--vf-text-subtle)]">
               Select 1 Primary Clip
             </span>
           </div>
 
           {clips.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-slate-300 dark:border-slate-800 p-6 text-center text-xs text-slate-500 dark:text-slate-400">
+            <div className="rounded-md border border-dashed border-[var(--vf-border)] bg-[var(--vf-bg)] p-6 text-center text-xs text-[var(--vf-text-muted)]">
               No reference clips added yet. Upload an audio/video file or record with your
               microphone to start.
             </div>
@@ -886,31 +887,31 @@ export function VoiceCloningPage() {
                 return (
                   <div
                     key={clip.id}
-                    className={`rounded-lg border p-2.5 transition-colors ${
+                    className={`rounded-md border p-2.5 transition-colors ${
                       isPrimary
-                        ? 'border-[#7C5CFF] bg-[#7C5CFF]/10'
-                        : 'border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-[#0B0D12]/50'
+                        ? 'border-[var(--vf-accent)] bg-[var(--vf-accent-soft)]'
+                        : 'border-[var(--vf-border-subtle)] bg-[var(--vf-bg)]'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1 space-y-1">
                         <div className="flex items-center gap-1.5">
                           {clip.metadata.source === 'microphone' ? (
-                            <Mic className="h-3.5 w-3.5 shrink-0 text-rose-400" />
+                            <Mic className="h-3.5 w-3.5 shrink-0 text-[var(--vf-danger)]" />
                           ) : clip.extractedFromVideo ? (
-                            <Film className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
+                            <Film className="h-3.5 w-3.5 shrink-0 text-[var(--vf-success)]" />
                           ) : (
-                            <Music className="h-3.5 w-3.5 shrink-0 text-[#7C5CFF]" />
+                            <AudioLines className="h-3.5 w-3.5 shrink-0 text-[var(--vf-accent)]" />
                           )}
-                          <span className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
+                          <span className="truncate text-xs font-semibold text-[var(--vf-text)]">
                             {clip.metadata.filename}
                           </span>
                         </div>
-                        <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                        <div className="flex flex-wrap items-center gap-2 text-[11px] text-[var(--vf-text-muted)] font-mono tabular-nums">
                           <span>{clip.audio.durationSec.toFixed(2)}s</span>
                           <span>{(clip.audio.sampleRate / 1000).toFixed(1)}kHz</span>
                           <span>{clip.audio.channels}ch</span>
-                          <span className="text-slate-700 dark:text-slate-300">
+                          <span className="text-[var(--vf-text)]">
                             Score {clip.quickScore}/100
                           </span>
                         </div>
@@ -920,10 +921,10 @@ export function VoiceCloningPage() {
                         <button
                           type="button"
                           onClick={() => handleSelectPrimaryClip(clip)}
-                          className={`rounded-md px-2 py-1 text-[11px] font-semibold transition-colors ${
+                          className={`rounded-md px-2 py-1 text-[11px] font-semibold transition-colors cursor-pointer ${
                             isPrimary
-                              ? 'bg-[#7C5CFF] text-white'
-                              : 'border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'
+                              ? 'bg-[var(--vf-accent)] text-white'
+                              : 'border border-[var(--vf-border)] bg-[var(--vf-surface)] text-[var(--vf-text-muted)] hover:text-[var(--vf-text)]'
                           }`}
                         >
                           {isPrimary ? 'Primary' : 'Set Primary'}
@@ -932,7 +933,7 @@ export function VoiceCloningPage() {
                           type="button"
                           onClick={() => handleRemoveClip(clip.id)}
                           aria-label={`Remove ${clip.metadata.filename}`}
-                          className="rounded-md p-1 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10"
+                          className="rounded-md p-1 text-[var(--vf-text-subtle)] hover:text-[var(--vf-danger)] hover:bg-[var(--vf-danger)]/10 cursor-pointer"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
@@ -949,28 +950,28 @@ export function VoiceCloningPage() {
       {/* Step 3: Waveform Trimming, A/B Toggle, Quality Inspection & Preprocessing */}
       {primaryClip && (
         <section className="space-y-5">
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] p-4 space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-[var(--vf-border-subtle)]">
               <div className="flex items-center gap-2">
-                <Scissors className="h-4 w-4 text-[#7C5CFF]" />
-                <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                <Scissors className="h-4 w-4 text-[var(--vf-accent)]" />
+                <h2 className="text-sm font-semibold text-[var(--vf-text)]">
                   3. Trim, Inspect &amp; A/B Compare
                 </h2>
               </div>
 
-              {/* Original vs Processed A/B Toggle right with WaveformPlayer */}
+              {/* Original vs Processed A/B Toggle */}
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--vf-text-muted)]">
                   A/B Audition:
                 </span>
-                <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-[#0B0D12] p-0.5">
+                <div className="inline-flex rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] p-0.5">
                   <button
                     type="button"
                     onClick={() => setAbMode('original')}
-                    className={`rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
+                    className={`rounded-sm px-3 py-1 text-xs font-semibold transition-colors cursor-pointer ${
                       abMode === 'original'
-                        ? 'bg-slate-900 dark:bg-slate-700 text-white'
-                        : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                        ? 'bg-[var(--vf-surface-elevated)] text-[var(--vf-text)] border border-[var(--vf-border)]'
+                        : 'text-[var(--vf-text-muted)] hover:text-[var(--vf-text)]'
                     }`}
                   >
                     Original
@@ -978,10 +979,10 @@ export function VoiceCloningPage() {
                   <button
                     type="button"
                     onClick={() => setAbMode('processed')}
-                    className={`rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
+                    className={`rounded-sm px-3 py-1 text-xs font-semibold transition-colors cursor-pointer ${
                       abMode === 'processed'
-                        ? 'bg-[#7C5CFF] text-white'
-                        : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                        ? 'bg-[var(--vf-accent)] text-white'
+                        : 'text-[var(--vf-text-muted)] hover:text-[var(--vf-text)]'
                     }`}
                   >
                     Processed
@@ -1005,13 +1006,13 @@ export function VoiceCloningPage() {
             />
 
             {/* Explicit Manual Trim Sliders & Precise Controls */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end rounded-lg border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-[#0B0D12]/50 p-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] p-3">
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
-                  <label htmlFor="trim-start-slider" className="text-slate-600 dark:text-slate-300">
+                  <label htmlFor="trim-start-slider" className="text-[var(--vf-text-muted)]">
                     Trim Start
                   </label>
-                  <span className="font-mono text-slate-900 dark:text-slate-100">
+                  <span className="font-mono tabular-nums text-[var(--vf-text)]">
                     {trimStartSec.toFixed(2)}s
                   </span>
                 </div>
@@ -1023,16 +1024,16 @@ export function VoiceCloningPage() {
                   step={0.05}
                   value={trimStartSec}
                   onChange={(e) => handleTrimChange(Number(e.target.value), trimEndSec)}
-                  className="w-full accent-[#7C5CFF]"
+                  className="w-full accent-[var(--vf-accent)]"
                 />
               </div>
 
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
-                  <label htmlFor="trim-end-slider" className="text-slate-600 dark:text-slate-300">
+                  <label htmlFor="trim-end-slider" className="text-[var(--vf-text-muted)]">
                     Trim End
                   </label>
-                  <span className="font-mono text-slate-900 dark:text-slate-100">
+                  <span className="font-mono tabular-nums text-[var(--vf-text)]">
                     {trimEndSec.toFixed(2)}s
                   </span>
                 </div>
@@ -1044,18 +1045,18 @@ export function VoiceCloningPage() {
                   step={0.05}
                   value={trimEndSec}
                   onChange={(e) => handleTrimChange(trimStartSec, Number(e.target.value))}
-                  className="w-full accent-[#7C5CFF]"
+                  className="w-full accent-[var(--vf-accent)]"
                 />
               </div>
 
               <div className="flex items-center justify-between sm:justify-end gap-2">
-                <span className="text-xs font-mono text-slate-600 dark:text-slate-300">
+                <span className="text-xs font-mono tabular-nums text-[var(--vf-text-muted)]">
                   Selected: {(trimEndSec - trimStartSec).toFixed(2)}s
                 </span>
                 <button
                   type="button"
                   onClick={() => resetTrimForClip(primaryClip)}
-                  className="rounded-lg border border-slate-300 dark:border-slate-700 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-800"
+                  className="rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface)] px-2.5 py-1 text-xs font-medium text-[var(--vf-text)] hover:border-[var(--vf-accent)]/50 cursor-pointer"
                 >
                   Reset Trim
                 </button>
@@ -1083,10 +1084,12 @@ export function VoiceCloningPage() {
       )}
 
       {/* Step 4: Authorization Gate, Profile Metadata & Voice Encoding */}
-      <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] p-4 space-y-4">
-        <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-          4. Authorize, Encode &amp; Save Voice Profile
-        </h2>
+      <section className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4 space-y-4">
+        <div className="pb-2 border-b border-[var(--vf-border-subtle)]">
+          <h2 className="text-sm font-semibold text-[var(--vf-text)]">
+            4. Authorize, Encode &amp; Save Voice Profile
+          </h2>
+        </div>
 
         <AuthorizationGate
           confirmed={authConfirmed}
@@ -1100,9 +1103,9 @@ export function VoiceCloningPage() {
           <div className="space-y-1">
             <label
               htmlFor="voice-name-input"
-              className="block text-xs font-medium text-slate-700 dark:text-slate-300"
+              className="block text-[11px] font-mono uppercase tracking-wider font-medium text-[var(--vf-text-muted)]"
             >
-              Voice Name <span className="text-rose-500">*</span>
+              Voice Name <span className="text-[var(--vf-danger)]">*</span>
             </label>
             <input
               id="voice-name-input"
@@ -1111,14 +1114,14 @@ export function VoiceCloningPage() {
               onChange={(e) => setVoiceName(e.target.value)}
               placeholder="e.g. Studio Narrator"
               maxLength={100}
-              className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#7C5CFF]"
+              className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-3 py-2 text-xs text-[var(--vf-text)] placeholder:text-[var(--vf-text-subtle)] focus:outline-none focus:border-[var(--vf-accent)] focus:ring-1 focus:ring-[var(--vf-accent)]/40"
             />
           </div>
 
           <div className="space-y-1">
             <label
               htmlFor="voice-language-select"
-              className="block text-xs font-medium text-slate-700 dark:text-slate-300"
+              className="block text-[11px] font-mono uppercase tracking-wider font-medium text-[var(--vf-text-muted)]"
             >
               Primary Language
             </label>
@@ -1126,7 +1129,7 @@ export function VoiceCloningPage() {
               id="voice-language-select"
               value={resolvedVoiceLanguage}
               onChange={(e) => setVoiceLanguage(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#7C5CFF]"
+              className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-3 py-2 text-xs text-[var(--vf-text)] focus:outline-none focus:border-[var(--vf-accent)] focus:ring-1 focus:ring-[var(--vf-accent)]/40"
             >
               {supportedLanguages.map((lang) => (
                 <option key={lang.code} value={lang.code}>
@@ -1139,7 +1142,7 @@ export function VoiceCloningPage() {
           <div className="space-y-1">
             <label
               htmlFor="voice-tags-input"
-              className="block text-xs font-medium text-slate-700 dark:text-slate-300"
+              className="block text-[11px] font-mono uppercase tracking-wider font-medium text-[var(--vf-text-muted)]"
             >
               Tags (comma-separated)
             </label>
@@ -1149,7 +1152,7 @@ export function VoiceCloningPage() {
               value={voiceTagsRaw}
               onChange={(e) => setVoiceTagsRaw(e.target.value)}
               placeholder="narration, warm, baritone"
-              className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#7C5CFF]"
+              className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-3 py-2 text-xs text-[var(--vf-text)] placeholder:text-[var(--vf-text-subtle)] focus:outline-none focus:border-[var(--vf-accent)] focus:ring-1 focus:ring-[var(--vf-accent)]/40"
             />
           </div>
         </div>
@@ -1157,7 +1160,7 @@ export function VoiceCloningPage() {
         <div className="space-y-1">
           <label
             htmlFor="voice-desc-input"
-            className="block text-xs font-medium text-slate-700 dark:text-slate-300"
+            className="block text-[11px] font-mono uppercase tracking-wider font-medium text-[var(--vf-text-muted)]"
           >
             Notes / Description (optional)
           </label>
@@ -1168,22 +1171,22 @@ export function VoiceCloningPage() {
             onChange={(e) => setVoiceDescription(e.target.value)}
             placeholder="Microphone setup, vocal tone, or intended narration style..."
             maxLength={400}
-            className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#7C5CFF]"
+            className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-3 py-2 text-xs text-[var(--vf-text)] placeholder:text-[var(--vf-text-subtle)] focus:outline-none focus:border-[var(--vf-accent)] focus:ring-1 focus:ring-[var(--vf-accent)]/40"
           />
         </div>
 
         {/* Engine Download / Initialization Prompt */}
         {!isEngineInitialized && (
-          <div className="rounded-lg border border-sky-500/30 bg-sky-500/10 p-3.5 space-y-2.5">
+          <div className="rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] p-3.5 space-y-2.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="space-y-0.5">
-                <div className="text-xs font-semibold text-sky-800 dark:text-sky-200 flex items-center gap-1.5">
-                  <Download className="h-3.5 w-3.5" />
+                <div className="text-xs font-semibold text-[var(--vf-text)] flex items-center gap-1.5">
+                  <Download className="h-3.5 w-3.5 text-[var(--vf-accent)]" />
                   {isModelCached
                     ? `${engineSpec.shortLabel} is cached offline — initialize runtime to encode`
                     : `${engineSpec.shortLabel} weights (${engineSpec.sizeLabel}) are not cached yet`}
                 </div>
-                <p className="text-[11px] text-sky-700 dark:text-sky-300">
+                <p className="text-[11px] text-[var(--vf-text-muted)]">
                   {isModelCached
                     ? 'Weights are verified in browser storage. Initialize ONNX Runtime sessions before encoding.'
                     : 'Initializing will download pinned weights once from Hugging Face (or your configured mirror) and cache them locally.'}
@@ -1194,16 +1197,16 @@ export function VoiceCloningPage() {
                 <button
                   type="button"
                   onClick={() => void handleInitializeEngine()}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 px-3 py-1.5 text-xs font-semibold text-white"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] hover:border-[var(--vf-accent)] px-3 py-1.5 text-xs font-semibold text-[var(--vf-text)] cursor-pointer transition-colors"
                 >
-                  <Download className="h-3.5 w-3.5" />
+                  <Download className="h-3.5 w-3.5 text-[var(--vf-accent)]" />
                   {isModelCached ? 'Initialize Engine' : `Download & Initialize (${engineSpec.sizeLabel})`}
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={handleCancelInit}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/40 bg-rose-500/15 px-3 py-1.5 text-xs font-semibold text-rose-500"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-danger)]/40 bg-[var(--vf-danger)]/15 px-3 py-1.5 text-xs font-semibold text-[var(--vf-danger)] cursor-pointer"
                 >
                   <Square className="h-3 w-3 fill-current" />
                   Cancel
@@ -1213,20 +1216,20 @@ export function VoiceCloningPage() {
 
             {isInitializingEngine && initProgress && (
               <div className="space-y-1">
-                <div className="flex items-center justify-between text-[11px] text-sky-800 dark:text-sky-200">
+                <div className="flex items-center justify-between text-[11px] text-[var(--vf-text-muted)]">
                   <span>
                     [{initProgress.phase}] {initProgress.message}
                   </span>
-                  <span className="font-mono">
+                  <span className="font-mono tabular-nums text-[var(--vf-text)]">
                     {Math.round(initProgress.progress * 100)}%
                     {initProgress.loadedBytes && initProgress.totalBytes
                       ? ` (${formatBytes(initProgress.loadedBytes)} / ${formatBytes(initProgress.totalBytes)})`
                       : ''}
                   </span>
                 </div>
-                <div className="h-1.5 w-full rounded-full bg-sky-900/30 overflow-hidden">
+                <div className="h-1.5 w-full rounded-sm bg-[var(--vf-surface-muted)] overflow-hidden">
                   <div
-                    className="h-full bg-sky-500 transition-all duration-150"
+                    className="h-full bg-[var(--vf-accent)] transition-all duration-150"
                     style={{ width: `${Math.round(initProgress.progress * 100)}%` }}
                   />
                 </div>
@@ -1238,17 +1241,17 @@ export function VoiceCloningPage() {
         {engineError && (
           <div
             role="alert"
-            className="flex items-start gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-700 dark:text-rose-200"
+            className="flex items-start gap-2 rounded-md border border-[var(--vf-danger)]/35 bg-[var(--vf-danger)]/10 p-3 text-xs text-[var(--vf-danger)]"
           >
-            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-rose-500" />
+            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <span>{engineError}</span>
           </div>
         )}
 
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-          <div className="text-xs text-slate-500 dark:text-slate-400">
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[var(--vf-border-subtle)]">
+          <div className="text-xs text-[var(--vf-text-muted)]">
             Encoding input:{' '}
-            <span className="font-medium text-slate-800 dark:text-slate-200">
+            <span className="font-mono font-medium text-[var(--vf-text)]">
               {abMode === 'original' ? 'Original Trimmed Audio' : 'Preprocessed Audio (24 kHz mono)'}
             </span>
           </div>
@@ -1257,7 +1260,7 @@ export function VoiceCloningPage() {
             type="button"
             disabled={!canEncode}
             onClick={() => void handleEncodeAndSave()}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#7C5CFF] hover:bg-[#6a48f5] disabled:opacity-45 disabled:cursor-not-allowed px-5 py-2.5 text-xs font-semibold text-white transition-colors"
+            className="inline-flex items-center gap-2 rounded-md bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] disabled:opacity-45 disabled:cursor-not-allowed px-5 py-2.5 text-xs font-semibold text-white transition-colors cursor-pointer"
           >
             {isEncoding ? (
               <>
@@ -1266,12 +1269,12 @@ export function VoiceCloningPage() {
               </>
             ) : savedProfile && !savedHasCurrentEngine ? (
               <>
-                <Sparkles className="h-4 w-4" />
+                <Disc3 className="h-4 w-4" />
                 Add {engineSpec.shortLabel} Conditioning to Profile
               </>
             ) : (
               <>
-                <Sparkles className="h-4 w-4" />
+                <Disc3 className="h-4 w-4" />
                 Encode &amp; Save Voice Profile
               </>
             )}
@@ -1281,17 +1284,20 @@ export function VoiceCloningPage() {
 
       {/* Step 5: Saved Confirmation & Instant Preview Synthesis */}
       {savedProfile && (
-        <section className="rounded-xl border border-emerald-500/35 bg-white dark:bg-[#121622] p-4 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+        <section className="rounded-lg border border-[var(--vf-success)]/45 bg-[var(--vf-surface)] p-4 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-2.5 border-b border-[var(--vf-border-subtle)]">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="h-5 w-5 text-[var(--vf-success)]" />
               <div>
-                <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                <h2 className="text-sm font-semibold text-[var(--vf-text)]">
                   Voice Profile Saved: {savedProfile.name}
                 </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-[var(--vf-text-muted)]">
                   Stored locally in IndexedDB with{' '}
-                  {Object.keys(savedProfile.conditioningPayloads).length} engine payload(s).
+                  <span className="font-mono tabular-nums">
+                    {Object.keys(savedProfile.conditioningPayloads).length}
+                  </span>{' '}
+                  engine payload(s).
                 </p>
               </div>
             </div>
@@ -1300,7 +1306,7 @@ export function VoiceCloningPage() {
               <button
                 type="button"
                 onClick={handleUseInStudio}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-[#7C5CFF] hover:bg-[#6a48f5] px-3.5 py-2 text-xs font-semibold text-white"
+                className="inline-flex items-center gap-1.5 rounded-md bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] px-3.5 py-2 text-xs font-semibold text-white cursor-pointer transition-colors"
               >
                 Use in Studio
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -1308,13 +1314,13 @@ export function VoiceCloningPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-[#0B0D12]/60 p-3.5 space-y-3">
+          <div className="rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] p-3.5 space-y-3">
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-900 dark:text-slate-100">
-                <Radio className="h-4 w-4 text-[#7C5CFF]" />
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--vf-text)]">
+                <Radio className="h-4 w-4 text-[var(--vf-accent)]" />
                 Instant Speech Preview ({engineSpec.shortLabel})
               </div>
-              <span className="text-[11px] text-amber-600 dark:text-amber-300 font-medium">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--vf-warning)] font-semibold">
                 Synthetic AI speech preview
               </span>
             </div>
@@ -1325,7 +1331,7 @@ export function VoiceCloningPage() {
                   key={idx}
                   type="button"
                   onClick={() => setPreviewText(sentence)}
-                  className="rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#121622] px-2.5 py-1 text-[11px] text-slate-700 dark:text-slate-300 hover:border-[#7C5CFF]"
+                  className="rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface)] px-2.5 py-1 text-[11px] font-mono text-[var(--vf-text-muted)] hover:border-[var(--vf-accent)] hover:text-[var(--vf-text)] cursor-pointer transition-colors"
                 >
                   Sample {idx + 1}
                 </button>
@@ -1338,14 +1344,14 @@ export function VoiceCloningPage() {
                 value={previewText}
                 onChange={(e) => setPreviewText(e.target.value)}
                 placeholder="Type a sentence to test your cloned voice immediately..."
-                className="flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#121622] px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#7C5CFF]"
+                className="flex-1 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface)] px-3 py-2 text-xs text-[var(--vf-text)] focus:outline-none focus:border-[var(--vf-accent)] focus:ring-1 focus:ring-[var(--vf-accent)]/40"
               />
               {!isSynthesizingPreview ? (
                 <button
                   type="button"
                   disabled={!savedHasCurrentEngine}
                   onClick={() => void handleSynthesizePreview()}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-45 px-4 py-2 text-xs font-semibold text-white shrink-0"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 disabled:opacity-45 px-4 py-2 text-xs font-semibold text-white shrink-0 cursor-pointer transition-colors"
                 >
                   <Play className="h-3.5 w-3.5 fill-current" />
                   Synthesize Preview
@@ -1354,7 +1360,7 @@ export function VoiceCloningPage() {
                 <button
                   type="button"
                   onClick={handleCancelPreviewSynth}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 px-4 py-2 text-xs font-semibold text-white shrink-0"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-md bg-rose-600 hover:bg-rose-500 px-4 py-2 text-xs font-semibold text-white shrink-0 cursor-pointer transition-colors"
                 >
                   <Square className="h-3.5 w-3.5 fill-current" />
                   Stop
@@ -1363,16 +1369,16 @@ export function VoiceCloningPage() {
             </div>
 
             {previewError && (
-              <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-2.5 text-xs text-rose-700 dark:text-rose-200">
+              <div className="rounded-md border border-[var(--vf-danger)]/35 bg-[var(--vf-danger)]/10 p-2.5 text-xs text-[var(--vf-danger)]">
                 {previewError}
               </div>
             )}
 
             {previewResult && (
               <div className="space-y-2 pt-1">
-                <div className="flex flex-wrap items-center gap-3 text-[11px] font-mono text-slate-600 dark:text-slate-300">
+                <div className="flex flex-wrap items-center gap-3 text-[11px] font-mono tabular-nums text-[var(--vf-text-muted)]">
                   <span className="inline-flex items-center gap-1">
-                    <Volume2 className="h-3.5 w-3.5 text-emerald-500" />
+                    <Volume2 className="h-3.5 w-3.5 text-[var(--vf-success)]" />
                     Duration: {previewResult.audio.durationSec.toFixed(2)}s
                   </span>
                   <span>Latency: {(previewResult.generationTimeMs / 1000).toFixed(2)}s</span>
