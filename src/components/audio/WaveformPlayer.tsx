@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pause, Play, RotateCcw, Scissors } from 'lucide-react';
+import { Download, Loader2, Pause, Play, RotateCcw, Scissors, SlidersHorizontal } from 'lucide-react';
+import { exportAudio } from '../../audio';
 import { useAppStore } from '../../stores/appStore';
+import type { AudioBufferData } from '../../types';
+import { triggerBrowserDownload } from '../studio/studioHelpers';
 
 export interface WaveformPlayerProps {
   samples: Float32Array | null;
@@ -12,6 +15,9 @@ export interface WaveformPlayerProps {
   onTrimChange?: (startSec: number, endSec: number) => void;
   compact?: boolean;
   className?: string;
+  showDownload?: boolean;
+  downloadFilename?: string;
+  onOpenExportModal?: () => void;
 }
 
 function formatTimecode(seconds: number): string {
@@ -38,6 +44,9 @@ export function WaveformPlayer({
   onTrimChange,
   compact = false,
   className = '',
+  showDownload = true,
+  downloadFilename,
+  onOpenExportModal,
 }: WaveformPlayerProps) {
   const theme = useAppStore((s) => s.theme);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -57,6 +66,8 @@ export function WaveformPlayer({
   const [currentTimeSec, setCurrentTimeSec] = useState<number>(0);
   const [trackedSamples, setTrackedSamples] = useState<Float32Array | null>(samples);
   const [trackedSampleRate, setTrackedSampleRate] = useState<number>(sampleRate);
+  const [downloadingFormat, setDownloadingFormat] = useState<'wav' | 'mp3' | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   if (samples !== trackedSamples || sampleRate !== trackedSampleRate) {
     setTrackedSamples(samples);
@@ -489,6 +500,50 @@ export function WaveformPlayer({
 
   const disabled = !samples || samples.length === 0 || durationSec <= 0;
 
+  const handleQuickDownload = (format: 'wav16' | 'mp3_192') => {
+    if (!samples || samples.length === 0 || sampleRate <= 0 || downloadingFormat !== null) {
+      return;
+    }
+    const kind = format === 'wav16' ? 'wav' : 'mp3';
+    setDownloadingFormat(kind);
+    setDownloadError(null);
+
+    window.setTimeout(() => {
+      try {
+        const safeBaseName =
+          (downloadFilename ?? title ?? 'voiceforge-audio')
+            .trim()
+            .replace(/[^a-zA-Z0-9._-]+/g, '_') || 'voiceforge-audio';
+
+        const audioData: AudioBufferData = {
+          samples,
+          sampleRate,
+          channels: 1,
+          durationSec: samples.length / sampleRate,
+        };
+
+        const result = exportAudio(audioData, {
+          format,
+          sampleRate: 'native',
+          channels: 'mono',
+          applyMastering: false,
+          normalizeOutput: false,
+          filename: safeBaseName,
+          metadata: {
+            title: title || safeBaseName,
+            artist: 'VoiceForge Studio',
+          },
+        });
+
+        triggerBrowserDownload(result.bytes, result.mimeType, result.filename);
+      } catch (err) {
+        setDownloadError(err instanceof Error ? err.message : String(err));
+      } finally {
+        setDownloadingFormat(null);
+      }
+    }, 0);
+  };
+
   return (
     <div
       className={`rounded-xl border border-[var(--vf-border)] bg-[var(--vf-surface)] ${
@@ -525,8 +580,8 @@ export function WaveformPlayer({
         />
       </div>
 
-      <div className={`flex items-center justify-between gap-3 ${compact ? 'mt-2' : 'mt-2.5'}`}>
-        <div className="flex items-center gap-1.5">
+      <div className={`flex flex-wrap items-center justify-between gap-2.5 ${compact ? 'mt-2' : 'mt-2.5'}`}>
+        <div className="flex flex-wrap items-center gap-1.5">
           <button
             type="button"
             disabled={disabled}
@@ -552,6 +607,61 @@ export function WaveformPlayer({
           >
             <RotateCcw className="h-3.5 w-3.5" />
           </button>
+
+          {showDownload && !disabled && (
+            <>
+              <button
+                type="button"
+                disabled={downloadingFormat !== null}
+                onClick={() => handleQuickDownload('wav16')}
+                className={`inline-flex items-center justify-center gap-1.5 rounded-lg border border-emerald-500/35 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 hover:bg-emerald-500/20 font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                  compact ? 'h-7 px-2 text-[11px]' : 'h-8 px-2.5 text-xs'
+                }`}
+                aria-label="Download WAV"
+                title="Download 16-bit WAV audio"
+              >
+                {downloadingFormat === 'wav' ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Download className="h-3.5 w-3.5" />
+                )}
+                <span>{compact ? 'WAV' : 'Download WAV'}</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={downloadingFormat !== null}
+                onClick={() => handleQuickDownload('mp3_192')}
+                className={`inline-flex items-center justify-center gap-1.5 rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                  compact ? 'h-7 px-2 text-[11px]' : 'h-8 px-2.5 text-xs'
+                }`}
+                aria-label="Download MP3"
+                title="Download 192 kbps MP3 audio"
+              >
+                {downloadingFormat === 'mp3' ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Download className="h-3.5 w-3.5" />
+                )}
+                <span>{compact ? 'MP3' : 'Download MP3'}</span>
+              </button>
+
+              {onOpenExportModal && (
+                <button
+                  type="button"
+                  onClick={onOpenExportModal}
+                  className={`inline-flex items-center justify-center gap-1.5 rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] font-medium transition-colors cursor-pointer ${
+                    compact ? 'h-7 px-2 text-[11px]' : 'h-8 px-2.5 text-xs'
+                  }`}
+                  aria-label="Export Options"
+                  title="More formats, 24-bit WAV, ZIP & SRT captions"
+                >
+                  <SlidersHorizontal className="h-3.5 w-3.5" />
+                  <span>{compact ? 'Options' : 'Export Options'}</span>
+                </button>
+              )}
+            </>
+          )}
         </div>
 
         <div className="flex items-center gap-2 text-xs font-mono text-[var(--vf-text-muted)]">
@@ -565,6 +675,12 @@ export function WaveformPlayer({
           )}
         </div>
       </div>
+
+      {downloadError && (
+        <p className="mt-2 text-xs text-rose-500" role="alert">
+          Download failed: {downloadError}
+        </p>
+      )}
     </div>
   );
 }

@@ -1141,6 +1141,8 @@ export function StudioPage() {
               sampleRate={masteredAudio?.sampleRate ?? 24000}
               title={playerTitle}
               height={96}
+              downloadFilename={projectTitle || 'voiceforge-narration'}
+              onOpenExportModal={() => setExportOpen(true)}
             />
           </div>
 
