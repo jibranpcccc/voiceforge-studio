@@ -7,6 +7,7 @@
 import { create } from 'zustand';
 import {
   NarrationQueueService,
+  computeQueueState,
   narrationQueue,
   recoverInterruptedProject,
   type RunQueueOptions,
@@ -101,6 +102,21 @@ export interface ProjectStoreState {
 }
 
 export const useProjectStore = create<ProjectStoreState>((set, get) => {
+  const syncIdleQueueState = (
+    project: NarrationProject | null
+  ): Pick<ProjectStoreState, 'queueState'> | Record<string, never> => {
+    if (narrationQueue.getState().isRunning) {
+      return {};
+    }
+    return {
+      queueState: computeQueueState(project, {
+        isRunning: false,
+        isPaused: false,
+        activeChunkId: null,
+      }),
+    };
+  };
+
   const syncFromQueue = (queueInstance: NarrationQueueService) => {
     const unsubState = queueInstance.subscribeState((queueState) => {
       set({ queueState });
@@ -145,7 +161,12 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => {
         const activeProject = activeId
           ? projects.find((p) => p.id === activeId) ?? null
           : get().activeProject;
-        set({ projects, activeProject, loading: false });
+        set({
+          projects,
+          activeProject,
+          loading: false,
+          ...syncIdleQueueState(activeProject),
+        });
         return projects;
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
@@ -156,19 +177,19 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => {
 
     selectProject: async (projectId) => {
       if (!projectId) {
-        set({ activeProject: null });
+        set({ activeProject: null, ...syncIdleQueueState(null) });
         return null;
       }
       const loaded = await getProject(projectId);
       if (!loaded) {
-        set({ activeProject: null });
+        set({ activeProject: null, ...syncIdleQueueState(null) });
         return null;
       }
       const recovered = recoverInterruptedProject(loaded);
       if (recovered !== loaded) {
         await saveProject(recovered);
       }
-      set({ activeProject: recovered });
+      set({ activeProject: recovered, ...syncIdleQueueState(recovered) });
       return recovered;
     },
 
@@ -223,29 +244,38 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => {
       set((state) => ({
         activeProject: saved,
         projects: [saved, ...state.projects.filter((p) => p.id !== saved.id)],
+        ...syncIdleQueueState(saved),
       }));
       return saved;
     },
 
     saveProjectRecord: async (project) => {
       const saved = await saveProject(project);
-      set((state) => ({
-        activeProject:
-          state.activeProject?.id === saved.id ? saved : state.activeProject,
-        projects: state.projects.some((p) => p.id === saved.id)
-          ? state.projects.map((p) => (p.id === saved.id ? saved : p))
-          : [saved, ...state.projects],
-      }));
+      set((state) => {
+        const nextActive =
+          state.activeProject?.id === saved.id ? saved : state.activeProject;
+        return {
+          activeProject: nextActive,
+          projects: state.projects.some((p) => p.id === saved.id)
+            ? state.projects.map((p) => (p.id === saved.id ? saved : p))
+            : [saved, ...state.projects],
+          ...syncIdleQueueState(nextActive),
+        };
+      });
       return saved;
     },
 
     deleteProjectRecord: async (projectId) => {
       await deleteProject(projectId);
-      set((state) => ({
-        projects: state.projects.filter((p) => p.id !== projectId),
-        activeProject:
-          state.activeProject?.id === projectId ? null : state.activeProject,
-      }));
+      set((state) => {
+        const nextActive =
+          state.activeProject?.id === projectId ? null : state.activeProject;
+        return {
+          projects: state.projects.filter((p) => p.id !== projectId),
+          activeProject: nextActive,
+          ...syncIdleQueueState(nextActive),
+        };
+      });
     },
 
     startProjectQueue: async (projectId, options, queueInstance = narrationQueue) => {
@@ -304,7 +334,12 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => {
     },
 
     clearInMemoryProjects: () => {
-      set({ projects: [], activeProject: null, error: null });
+      set({
+        projects: [],
+        activeProject: null,
+        error: null,
+        ...syncIdleQueueState(null),
+      });
     },
   };
 });

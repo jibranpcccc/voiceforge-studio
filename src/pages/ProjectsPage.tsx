@@ -138,6 +138,7 @@ export function ProjectsPage() {
 
   const handleNewBlankProject = () => {
     useStudioStore.getState().clearDraft();
+    void selectProject(null);
     setActiveRoute('studio');
     navigateToHash('#/studio');
   };
@@ -328,6 +329,9 @@ export function ProjectsPage() {
                           type="button"
                           onClick={() => {
                             void deleteProjectRecord(project.id).then(() => {
+                              if (useStudioStore.getState().activeProjectId === project.id) {
+                                useStudioStore.getState().setActiveProjectId(null);
+                              }
                               setConfirmDeleteId(null);
                               setNotice(`Deleted "${project.name}" and its cached audio chunks.`);
                             });

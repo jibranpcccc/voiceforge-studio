@@ -34,6 +34,7 @@ import {
   loadProjectAudioChunkMap,
 } from '../components/studio';
 import { STUDIO_PRESET_LIST, extractEngineParametersForEngine } from '../services/presets';
+import { computeQueueState } from '../services/narrationQueue';
 import {
   getDefaultMaxCharsForEngine,
   segmentScript,
@@ -58,6 +59,7 @@ import type {
   NarrationProject,
   ScriptChunk,
   StudioPresetId,
+  VoiceProfile,
 } from '../types';
 
 export function StudioPage() {
@@ -75,6 +77,7 @@ export function StudioPage() {
 
   const activeProject = useProjectStore((s) => s.activeProject);
   const queueState = useProjectStore((s) => s.queueState);
+  const selectProject = useProjectStore((s) => s.selectProject);
   const createProject = useProjectStore((s) => s.createProject);
   const saveProjectRecord = useProjectStore((s) => s.saveProjectRecord);
   const startProjectQueue = useProjectStore((s) => s.startProjectQueue);
@@ -267,6 +270,17 @@ export function StudioPage() {
     ]
   );
 
+  // Recover active project from IndexedDB when reloading #/studio directly
+  useEffect(() => {
+    if (!activeProjectId) return;
+    if (activeProject && activeProject.id === activeProjectId) return;
+    void selectProject(activeProjectId).then((loaded) => {
+      if (!loaded) {
+        setActiveProjectId(null);
+      }
+    });
+  }, [activeProjectId, activeProject, selectProject, setActiveProjectId]);
+
   // Sync chunks & audio when activeProject changes (e.g. opened from ProjectsPage or updated by queue)
   useEffect(() => {
     if (!activeProject) return;
@@ -342,11 +356,32 @@ export function StudioPage() {
     }));
   }, [usingSavedProjectChunks, activeProject, segmentedPreview]);
 
+  const effectiveQueueState = useMemo(() => {
+    if (queueState.isRunning) {
+      return queueState;
+    }
+    if (!usingSavedProjectChunks || !activeProject) {
+      return computeQueueState(null, {
+        isRunning: false,
+        isPaused: false,
+        activeChunkId: null,
+      });
+    }
+    if (queueState.totalChunks === 0 && activeProject.chunks.length > 0) {
+      return computeQueueState(activeProject, {
+        isRunning: false,
+        isPaused: queueState.isPaused,
+        activeChunkId: null,
+      });
+    }
+    return queueState;
+  }, [queueState, usingSavedProjectChunks, activeProject]);
+
   const activeQueueChunkIndex = useMemo(() => {
-    if (!queueState.activeChunkId || !activeProject) return null;
-    const found = activeProject.chunks.find((c) => c.id === queueState.activeChunkId);
+    if (!effectiveQueueState.activeChunkId || !activeProject) return null;
+    const found = activeProject.chunks.find((c) => c.id === effectiveQueueState.activeChunkId);
     return found ? found.index : null;
-  }, [queueState.activeChunkId, activeProject]);
+  }, [effectiveQueueState.activeChunkId, activeProject]);
 
   const jumpToChunkInEditor = (chunkText: string, index: number) => {
     setSelectedChunkIndex(index);
@@ -558,17 +593,41 @@ export function StudioPage() {
     }
   };
 
-  const handleResumeQueue = async () => {
-    if (!activeProject || !selectedVoice || !activeEngine) return;
+  const runRecoveredQueueAction = async (
+    action: (
+      projectId: string,
+      options?: { voiceProfile?: VoiceProfile }
+    ) => Promise<NarrationProject>
+  ) => {
+    if (!activeProject) return;
+    const targetEngine = registry.get(activeProject.engineId) ?? activeEngine;
+    if (!targetEngine) {
+      setStudioError('Selected synthesis engine is unavailable.');
+      return;
+    }
+    const voiceToUse =
+      selectedVoice ??
+      voices.find((v) => v.id === activeProject.voiceProfileId) ??
+      null;
+    if (!voiceToUse && !activeProject.voiceProfileId) {
+      setStudioError('Select a Voice Profile first (or create one in Voice Cloning).');
+      return;
+    }
     setStudioError(null);
+    setStudioNotice(null);
     try {
-      await ensureEngineInitialized(activeEngine, executionMode, (progress) => {
-        setInitProgress(progress);
-      });
+      await ensureEngineInitialized(
+        targetEngine,
+        activeProject.executionMode ?? executionMode,
+        (progress) => {
+          setInitProgress(progress);
+        }
+      );
       setInitProgress(null);
-      const finished = await resumeProjectQueue(activeProject.id, {
-        voiceProfile: selectedVoice,
-      });
+      const finished = await action(
+        activeProject.id,
+        voiceToUse ? { voiceProfile: voiceToUse } : undefined
+      );
       await recordRunInHistory(finished);
     } catch (err) {
       setInitProgress(null);
@@ -576,22 +635,12 @@ export function StudioPage() {
     }
   };
 
+  const handleResumeQueue = async () => {
+    await runRecoveredQueueAction(resumeProjectQueue);
+  };
+
   const handleRetryFailed = async () => {
-    if (!activeProject || !selectedVoice || !activeEngine) return;
-    setStudioError(null);
-    try {
-      await ensureEngineInitialized(activeEngine, executionMode, (progress) => {
-        setInitProgress(progress);
-      });
-      setInitProgress(null);
-      const finished = await retryFailedProjectChunks(activeProject.id, {
-        voiceProfile: selectedVoice,
-      });
-      await recordRunInHistory(finished);
-    } catch (err) {
-      setInitProgress(null);
-      setStudioError(err instanceof Error ? err.message : String(err));
-    }
+    await runRecoveredQueueAction(retryFailedProjectChunks);
   };
 
   const handleRegenerateChunk = async (chunkId: string) => {
@@ -652,7 +701,8 @@ export function StudioPage() {
   };
 
   const hasPendingWork = Boolean(
-    activeProject &&
+    usingSavedProjectChunks &&
+      activeProject &&
       activeProject.chunks.some(
         (c) => c.status === 'pending' || c.status === 'cancelled' || c.status === 'queued'
       )
@@ -916,7 +966,7 @@ export function StudioPage() {
           </div>
 
           <QueueProgressBar
-            queueState={queueState}
+            queueState={effectiveQueueState}
             activeChunkIndex={activeQueueChunkIndex}
             onPause={pauseProjectQueue}
             onResume={() => void handleResumeQueue()}

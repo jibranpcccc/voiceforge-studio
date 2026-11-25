@@ -38,7 +38,7 @@ export function QueueProgressBar({
     estimatedRemainingSec,
   } = queueState;
 
-  if (totalChunks === 0 && !isRunning) {
+  if (totalChunks === 0 && !isRunning && !hasPendingWork) {
     return null;
   }
 

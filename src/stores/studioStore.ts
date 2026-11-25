@@ -37,6 +37,7 @@ const STORAGE_STUDIO_DRAFT_KEY = 'vf_studio_draft';
 const MAX_UNDO_HISTORY = 50;
 
 interface StudioDraftPayload {
+  activeProjectId: string | null;
   projectTitle: string;
   scriptText: string;
   selectedVoiceId: string | null;
@@ -149,7 +150,10 @@ export const useStudioStore = create<StudioStoreState>((set, get) => ({
     typeof initialDraft?.projectTitle === 'string' && initialDraft.projectTitle.trim()
       ? initialDraft.projectTitle
       : 'Untitled Narration',
-  activeProjectId: null,
+  activeProjectId:
+    typeof initialDraft?.activeProjectId === 'string' && initialDraft.activeProjectId.trim()
+      ? initialDraft.activeProjectId
+      : null,
   scriptText: typeof initialDraft?.scriptText === 'string' ? initialDraft.scriptText : '',
   undoStack: [],
   redoStack: [],
@@ -205,6 +209,7 @@ export const useStudioStore = create<StudioStoreState>((set, get) => ({
 
   setActiveProjectId: (activeProjectId) => {
     set({ activeProjectId });
+    get().saveDraft();
   },
 
   setScriptText: (text, recordHistory = true) => {
@@ -252,6 +257,7 @@ export const useStudioStore = create<StudioStoreState>((set, get) => ({
     const state = get();
     const savedAt = new Date().toISOString();
     writeDraftToStorage({
+      activeProjectId: state.activeProjectId,
       projectTitle: state.projectTitle,
       scriptText: state.scriptText,
       selectedVoiceId: state.selectedVoiceId,
@@ -273,6 +279,10 @@ export const useStudioStore = create<StudioStoreState>((set, get) => ({
     const draft = readDraftFromStorage();
     if (!draft) return false;
     set({
+      activeProjectId:
+        typeof draft.activeProjectId === 'string' && draft.activeProjectId.trim()
+          ? draft.activeProjectId
+          : null,
       projectTitle:
         typeof draft.projectTitle === 'string'
           ? draft.projectTitle
@@ -321,7 +331,10 @@ export const useStudioStore = create<StudioStoreState>((set, get) => ({
     const preset = getStudioPreset('natural-narration');
     set({
       projectTitle: 'Untitled Narration',
-      activeProjectId: null,
+      activeProjectId:
+    typeof initialDraft?.activeProjectId === 'string' && initialDraft.activeProjectId.trim()
+      ? initialDraft.activeProjectId
+      : null,
       scriptText: '',
       undoStack: [],
       redoStack: [],

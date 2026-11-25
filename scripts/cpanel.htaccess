@@ -1,0 +1,68 @@
+# VoiceForge Studio — Apache / cPanel Static Hosting Configuration
+# Place this file as `.htaccess` inside your deployed VoiceForge Studio directory
+# (for example: public_html/voiceforge/.htaccess).
+
+# -----------------------------------------------------------------------------
+# 1. MIME Types for ONNX Runtime Web, WebAssembly, Model Weights, and PWA
+# -----------------------------------------------------------------------------
+<IfModule mod_mime.c>
+  AddType application/wasm .wasm
+  AddType application/javascript .mjs .js
+  AddType application/octet-stream .onnx .onnx_data .bin .npy .model
+  AddType application/manifest+json .webmanifest
+  AddType application/json .json
+</IfModule>
+
+# Ensure directory index resolves to index.html
+DirectoryIndex index.html
+
+# -----------------------------------------------------------------------------
+# 2. Optional HTTPS Redirect (Uncomment if cPanel does not force HTTPS globally)
+#    HTTPS is required for Service Workers, WebGPU, OPFS, and Web Crypto APIs.
+# -----------------------------------------------------------------------------
+# <IfModule mod_rewrite.c>
+#   RewriteEngine On
+#   RewriteCond %{HTTPS} !=on
+#   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# </IfModule>
+
+# -----------------------------------------------------------------------------
+# 3. Cache-Control Headers
+#    - HTML, Service Worker, and pinned model manifest revalidate immediately.
+#    - Hashed Vite assets, WASM runtime files, icons, and model weights cache long-term.
+# -----------------------------------------------------------------------------
+<IfModule mod_headers.c>
+  # App shell entry, Service Worker, and manifest: always revalidate
+  <FilesMatch "^(index\.html|sw\.js|models\.json|manifest\.webmanifest)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+
+  # Static immutable assets, WASM runtime binaries, and self-hosted AI weights
+  <FilesMatch "\.(wasm|mjs|js|css|onnx|onnx_data|bin|npy|model|png|svg|ico|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  # Basic security headers safe for static SPA hosting
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# -----------------------------------------------------------------------------
+# 4. Optional Cross-Origin Isolation (COOP / COEP) for Multi-Threaded WASM
+# -----------------------------------------------------------------------------
+# VoiceForge Studio runs cleanly WITHOUT these headers using single-threaded
+# WASM SIMD (`numThreads = 1`). Only uncomment the two lines below if you want
+# multi-threaded WASM (`SharedArrayBuffer`, `crossOriginIsolated = true`).
+#
+# IMPORTANT: Use `credentialless` (NOT `require-corp`) if users download model
+# weights from Hugging Face (`huggingface.co`), because Hugging Face CDN
+# responses do not include `Cross-Origin-Resource-Policy: cross-origin`.
+# `credentialless` permits no-credential cross-origin fetches under COEP in
+# Chromium-based browsers (Chrome/Edge). Note that Safari does not support
+# `credentialless`; if Safari users fetch from Hugging Face, keep COOP/COEP
+# disabled or self-host weights under `./models/` on the same origin.
+#
+# <IfModule mod_headers.c>
+#   Header always set Cross-Origin-Opener-Policy "same-origin"
+#   Header always set Cross-Origin-Embedder-Policy "credentialless"
+# </IfModule>

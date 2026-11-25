@@ -515,6 +515,141 @@ describe('NarrationQueueService with IndexedDB persistence', () => {
     expect(engine.cancelCalls).toBe(1);
   });
 
+  it('recovers queueState on selectProject after reload (1 completed + 3 cancelled) and resumes to 4/4 completed in order without re-synthesizing completed chunks', async () => {
+    const voice = makeVoiceProfile('v-post-reload');
+    await saveVoice(voice);
+
+    const holder: { queue?: NarrationQueueService } = {};
+    const firstEngine = new MockEngine(async (req) => {
+      if (req.text === 'Paragraph two.') {
+        await holder.queue?.cancel();
+        const err = new Error('Operation aborted');
+        err.name = 'AbortError';
+        throw err;
+      }
+      return {
+        audio: {
+          samples: new Float32Array([0.11, 0.22]),
+          sampleRate: 24000,
+          channels: 1,
+          durationSec: 1.0,
+        },
+        generationTimeMs: 80,
+        realTimeFactor: 0.08,
+        backend: 'wasm',
+      };
+    });
+
+    const firstRegistry = new EngineRegistry();
+    firstRegistry.register(firstEngine);
+    const firstQueue = new NarrationQueueService({ registry: firstRegistry });
+    holder.queue = firstQueue;
+
+    const project = await useProjectStore.getState().createProject({
+      id: 'proj-reload-cancel',
+      name: 'Post Reload Recovery Test',
+      voiceProfileId: 'v-post-reload',
+      engineId: 'pocket-tts',
+      executionMode: 'cpu',
+      presetId: 'natural-narration',
+      scriptText: 'Paragraph one.\n\nParagraph two.\n\nParagraph three.\n\nParagraph four.',
+    });
+    expect(project.chunks).toHaveLength(4);
+
+    const interrupted = await firstQueue.startProject(project.id);
+    expect(interrupted.chunks.map((c) => c.status)).toEqual([
+      'completed',
+      'cancelled',
+      'cancelled',
+      'cancelled',
+    ]);
+
+    // Simulate full browser reload: clear in-memory projectStore and reset queueState to idle 0/0
+    useProjectStore.getState().clearInMemoryProjects();
+    useProjectStore.setState({
+      queueState: computeQueueState(null, {
+        isRunning: false,
+        isPaused: false,
+        activeChunkId: null,
+      }),
+    });
+    expect(useProjectStore.getState().activeProject).toBeNull();
+    expect(useProjectStore.getState().queueState.totalChunks).toBe(0);
+
+    // Selecting/opening the interrupted project from IndexedDB must recompute queueState
+    const recovered = await useProjectStore.getState().selectProject(project.id);
+    expect(recovered).not.toBeNull();
+    expect(recovered?.chunks.map((c) => c.status)).toEqual([
+      'completed',
+      'cancelled',
+      'cancelled',
+      'cancelled',
+    ]);
+    expect(useProjectStore.getState().queueState).toMatchObject({
+      isRunning: false,
+      isPaused: false,
+      activeChunkId: null,
+      totalChunks: 4,
+      completedChunks: 1,
+      failedChunks: 0,
+    });
+
+    // Resume on a fresh queue & engine instance (simulating post-reload Resume Queue click)
+    const resumedEngine = new MockEngine(async (req) => {
+      const marker = req.text.includes('two') ? 0.2 : req.text.includes('three') ? 0.3 : 0.4;
+      return {
+        audio: {
+          samples: new Float32Array([marker, -marker]),
+          sampleRate: 24000,
+          channels: 1,
+          durationSec: 1.0,
+        },
+        generationTimeMs: 90,
+        realTimeFactor: 0.09,
+        backend: 'wasm',
+      };
+    });
+    const resumedRegistry = new EngineRegistry();
+    resumedRegistry.register(resumedEngine);
+    const resumedQueue = new NarrationQueueService({ registry: resumedRegistry });
+
+    const finished = await useProjectStore
+      .getState()
+      .resumeProjectQueue(project.id, undefined, resumedQueue);
+
+    expect(finished.chunks.map((c) => c.status)).toEqual([
+      'completed',
+      'completed',
+      'completed',
+      'completed',
+    ]);
+    // Voice profile loaded from IndexedDB; chunk 1 was NOT re-synthesized; chunks 2..4 synthesized in order
+    expect(resumedEngine.loadVoiceCalls).toBe(1);
+    expect(resumedEngine.synthesizedTexts).toEqual([
+      'Paragraph two.',
+      'Paragraph three.',
+      'Paragraph four.',
+    ]);
+    expect(useProjectStore.getState().queueState).toMatchObject({
+      isRunning: false,
+      totalChunks: 4,
+      completedChunks: 4,
+      failedChunks: 0,
+    });
+
+    // All 4 audio chunks exist in IndexedDB with chunk 1 preserved and chunks 2..4 persisted
+    const storedAudio = await listProjectAudioChunks(project.id);
+    expect(storedAudio).toHaveLength(4);
+    const chunk1Pcm = await getAudioChunk(project.id, finished.chunks[0].id);
+    const chunk2Pcm = await getAudioChunk(project.id, finished.chunks[1].id);
+    const chunk3Pcm = await getAudioChunk(project.id, finished.chunks[2].id);
+    const chunk4Pcm = await getAudioChunk(project.id, finished.chunks[3].id);
+    expect(Array.from(new Float32Array(chunk1Pcm!.pcmBytes))[0]).toBeCloseTo(0.11, 4);
+    expect(Array.from(new Float32Array(chunk2Pcm!.pcmBytes))[0]).toBeCloseTo(0.2, 4);
+    expect(Array.from(new Float32Array(chunk3Pcm!.pcmBytes))[0]).toBeCloseTo(0.3, 4);
+    expect(Array.from(new Float32Array(chunk4Pcm!.pcmBytes))[0]).toBeCloseTo(0.4, 4);
+  });
+
   it('supports studioStore undo/redo, draft autosave, presets, and pronunciation rules', async () => {
     const studio = useStudioStore.getState();
     studio.clearDraft();

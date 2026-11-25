@@ -355,10 +355,13 @@ export class NarrationQueueService {
 
     const loaded = await this.resolveProject(targetId);
     const recovered = recoverInterruptedProject(loaded);
+    const orderedChunks = [...recovered.chunks].sort((a, b) => a.index - b.index);
     const prepared: NarrationProject = {
       ...recovered,
-      chunks: recovered.chunks.map((chunk) =>
-        chunk.status === 'pending' || chunk.status === 'cancelled'
+      chunks: orderedChunks.map((chunk) =>
+        chunk.status === 'pending' ||
+        chunk.status === 'cancelled' ||
+        chunk.status === 'failed'
           ? {
               ...chunk,
               status: 'queued' as const,
