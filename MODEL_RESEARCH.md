@@ -91,6 +91,8 @@ Measured in Playwright against `http://127.0.0.1:4173/#/poc` on Windows x64 (`In
 
 ### 3.1 Pocket TTS (`pocket-tts`, 146 MB INT8 WASM) — Full End-to-End Pass
 
+**Single-Threaded WASM PoC Baseline (`crossOriginIsolated: false`, `numThreads: 1`):**
+
 | Metric | Google Chrome (`chrome`) | Microsoft Edge (`msedge`) |
 |---|---|---|
 | Status | **PASS** | **PASS** |
@@ -103,6 +105,16 @@ Measured in Playwright against `http://127.0.0.1:4173/#/poc` on Windows x64 (`In
 | Real-Time Factor (`gen / audio`) | `1.46x` (`1.464`) | `1.57x` (`1.568`) |
 | Waveform RMS / Peak | `0.1845` / `0.9707` | `0.1845` / `0.9707` |
 | Non-Finite Samples / Browser Errors / `speechSynthesis` Calls | `0` / `0` / `0` | `0` / `0` / `0` |
+
+**Multi-Threaded WASM Thread Scaling (`public/sw.js` COOP/COEP `crossOriginIsolated: true` in Chrome, `4.24 s` utterance, `lsdSteps: 1`, `seed: 42`, cached):**
+
+| `wasmThreads` | First-Chunk Latency (TTFB) | Synthesis Time (`genMs`) | Real-Time Factor (`gen / audio`) | Speedup vs 1 Thread |
+|---:|---:|---:|---:|---:|
+| `1` | `935 ms` | `11,117 ms` | `2.622x` | `1.00x` |
+| `2` | `755 ms` | `7,561 ms` | `1.783x` | `1.47x` |
+| `4` | `528 ms` | `6,430 ms` | `1.516x` | **`1.73x`** |
+
+In the full 15-step Studio E2E suite (`crossOriginIsolated: true` + `4` WASM threads + parallel multi-paragraph worker pool), single-script Studio synthesis dropped from `15.03 s` -> `7.04 s` in Chrome (`2.14x` faster) and `16.18 s` -> `9.74 s` in Edge (`1.66x` faster), and second-script synthesis dropped from `24.45 s` -> `7.38 s` in Chrome.
 
 ### 3.2 Chatterbox ONNX (`chatterbox`, `q4f16`, 1.50 GB) — Hardware Check & Download Telemetry
 

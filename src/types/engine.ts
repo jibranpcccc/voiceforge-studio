@@ -77,6 +77,8 @@ export interface EngineInitOptions {
   wasmThreads?: number;
   /** Base URL for local ONNX Runtime WASM/MJS assets (defaults to `${BASE_URL}runtime/`). */
   wasmBasePath?: string;
+  /** Skip loading the voice encoder session (e.g. synthesis-only parallel pool workers). */
+  skipEncoder?: boolean;
   /** Optional custom model revision override (must match pinned manifest unless user overrides). */
   modelRevision?: string;
   /** Optional AbortSignal to cancel initialization/download. */

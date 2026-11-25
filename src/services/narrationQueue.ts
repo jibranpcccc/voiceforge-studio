@@ -11,6 +11,7 @@ import {
   EngineRegistry,
   defaultEngineRegistry,
 } from '../engines/registry';
+import { PocketTtsEngine } from '../engines/pocket';
 import {
   buildAudioChunkKey,
   getProject,
@@ -23,6 +24,7 @@ import type {
   LoadedVoiceHandle,
   NarrationProject,
   ScriptChunk,
+  SynthesizedAudioChunk,
   VoiceCloningEngine,
   VoiceProfile,
 } from '../types';
@@ -40,6 +42,14 @@ export interface RunQueueOptions {
   voiceProfile?: VoiceProfile;
   /** Skip pronunciation re-normalization if project chunks are already normalized. */
   preserveNormalizedText?: boolean;
+  /** Number of parallel Pocket TTS Web Workers to run for multi-chunk narration (default 1). */
+  parallelWorkers?: number;
+  /** Optional custom model base URL for ephemeral pool workers (self-hosted cPanel mode). */
+  customModelBaseUrl?: string;
+  /** Live streaming PCM frame callback per synthesized frame. */
+  onStreamChunk?: (chunkIndex: number, chunkId: string, audioChunk: SynthesizedAudioChunk) => void;
+  /** Optional worker factory for unit testing parallel pools. */
+  poolEngineFactory?: () => VoiceCloningEngine;
 }
 
 function isAbortError(err: unknown): boolean {
@@ -167,6 +177,7 @@ export class NarrationQueueService {
   private activeProjectId: string | null = null;
   private activeAbortController: AbortController | null = null;
   private activeEngine: VoiceCloningEngine | null = null;
+  private readonly activeEngines = new Set<VoiceCloningEngine>();
 
   private measuredTimingMsTotal = 0;
   private measuredCharsTotal = 0;
@@ -426,6 +437,15 @@ export class NarrationQueueService {
       }
     }
 
+    for (const eng of this.activeEngines) {
+      if (eng === this.activeEngine) continue;
+      try {
+        await eng.cancel();
+      } catch {
+        // Ignore pool engine cancel errors during shutdown.
+      }
+    }
+
     if (this.activeProjectId && !this.isRunning) {
       const existing = await getProject(this.activeProjectId);
       if (existing) {
@@ -460,6 +480,7 @@ export class NarrationQueueService {
       pauseAfterMs?: number;
       parameterOverrides?: Record<string, number | string | boolean>;
       voiceProfile?: VoiceProfile;
+      onStreamChunk?: (chunkIndex: number, chunkId: string, audioChunk: SynthesizedAudioChunk) => void;
     }
   ): Promise<NarrationProject> {
     if (this.isRunning) {
@@ -525,13 +546,18 @@ export class NarrationQueueService {
         project.engineId
       );
 
-      const result = await engine.synthesize({
-        text: nextNormalizedText,
-        voiceHandle,
-        language: voiceProfile.language || 'en',
-        parameters: mergedParams,
-        signal: this.activeAbortController.signal,
-      });
+      const result = await engine.synthesize(
+        {
+          text: nextNormalizedText,
+          voiceHandle,
+          language: voiceProfile.language || 'en',
+          parameters: mergedParams,
+          signal: this.activeAbortController.signal,
+        },
+        overrides?.onStreamChunk
+          ? (audioChunk) => overrides.onStreamChunk?.(existingChunk.index, chunkId, audioChunk)
+          : undefined
+      );
 
       await saveAudioChunk({
         projectId: project.id,
@@ -605,126 +631,229 @@ export class NarrationQueueService {
     this.cancelRequested = false;
     this.activeProjectId = project.id;
     this.activeEngine = engine;
+    this.activeEngines.clear();
+    this.activeEngines.add(engine);
     this.activeAbortController = new AbortController();
     this.seedTimingCountersFromProject(project);
     this.emitState(project);
 
+    const pendingIndices: number[] = [];
+    for (let idx = 0; idx < project.chunks.length; idx += 1) {
+      const st = project.chunks[idx].status;
+      if (st !== 'completed' && st !== 'failed') {
+        pendingIndices.push(idx);
+      }
+    }
+
+    const requestedWorkers = Math.max(1, Math.min(4, Math.floor(options.parallelWorkers ?? 1)));
+    const usePool =
+      requestedWorkers > 1 &&
+      pendingIndices.length >= 2 &&
+      (project.engineId === 'pocket-tts' || Boolean(options.poolEngineFactory));
+    const targetWorkerCount = usePool ? Math.min(requestedWorkers, pendingIndices.length) : 1;
+
+    const ephemeralEngines: VoiceCloningEngine[] = [];
+    const workerSlots: Array<{ eng: VoiceCloningEngine; handle: LoadedVoiceHandle }> = [
+      { eng: engine, handle: voiceHandle },
+    ];
+
+    let persistChain = Promise.resolve();
+    const mutateProject = (
+      updater: (current: NarrationProject) => NarrationProject
+    ): Promise<NarrationProject> => {
+      const next = persistChain.then(async () => {
+        project = await this.persistAndNotify(updater(project));
+        return project;
+      });
+      persistChain = next.then(
+        () => undefined,
+        () => undefined
+      );
+      return next;
+    };
+
     try {
-      for (let i = 0; i < project.chunks.length; i += 1) {
-        if (this.cancelRequested) {
-          project = await this.markRemainingCancelled(project);
-          break;
-        }
+      if (targetWorkerCount > 1) {
+        const hwCores =
+          typeof navigator !== 'undefined' && typeof navigator.hardwareConcurrency === 'number'
+            ? navigator.hardwareConcurrency
+            : 4;
+        const perWorkerThreads = Math.max(1, Math.min(4, Math.floor(hwCores / targetWorkerCount)));
 
-        if (this.pauseRequested) {
-          project = await this.persistAndNotify({
-            ...project,
-            chunks: project.chunks.map((c) =>
-              c.status === 'queued' ? { ...c, status: 'pending' as const } : c
-            ),
-          });
-          break;
-        }
-
-        const targetChunk = project.chunks[i];
-        if (targetChunk.status === 'completed' || targetChunk.status === 'failed') {
-          continue;
-        }
-
-        this.activeChunkId = targetChunk.id;
-        project = await this.persistAndNotify({
-          ...project,
-          chunks: project.chunks.map((c, idx) =>
-            idx === i
-              ? { ...c, status: 'synthesizing' as const, errorMessage: undefined }
-              : c
-          ),
-        });
-
-        const textToSynthesize =
-          targetChunk.normalizedText ||
-          applyPronunciationRules(targetChunk.rawText, project.pronunciationRules);
-
-        const mergedParameters = extractEngineParametersForEngine(
-          {
-            ...project.engineParameters,
-            ...targetChunk.parameterOverrides,
-          },
-          project.engineId
+        const extraResults = await Promise.allSettled(
+          Array.from({ length: targetWorkerCount - 1 }, async () => {
+            const extraEngine = options.poolEngineFactory
+              ? options.poolEngineFactory()
+              : new PocketTtsEngine({ customModelBaseUrl: options.customModelBaseUrl });
+            ephemeralEngines.push(extraEngine);
+            this.activeEngines.add(extraEngine);
+            await extraEngine.initialize({
+              executionMode: project.executionMode ?? 'balanced',
+              wasmThreads: perWorkerThreads,
+              skipEncoder: true,
+              signal: this.activeAbortController?.signal,
+            });
+            const extraHandle = await extraEngine.loadVoiceProfile(voiceProfile);
+            return { eng: extraEngine, handle: extraHandle };
+          })
         );
 
-        try {
-          const result = await engine.synthesize({
-            text: textToSynthesize,
-            voiceHandle,
-            language: voiceProfile.language || 'en',
-            parameters: mergedParameters,
-            signal: this.activeAbortController.signal,
-          });
-
-          // Write PCM audio immediately to IndexedDB (`audioChunks`) instead of keeping in RAM.
-          await saveAudioChunk({
-            projectId: project.id,
-            chunkId: targetChunk.id,
-            sampleRate: result.audio.sampleRate,
-            pcm: result.audio.samples,
-            durationSec: result.audio.durationSec,
-          });
-
-          const genTimeMs =
-            typeof result.generationTimeMs === 'number' && result.generationTimeMs > 0
-              ? result.generationTimeMs
-              : 1;
-          this.measuredTimingMsTotal += genTimeMs;
-          this.measuredCharsTotal += Math.max(1, textToSynthesize.length);
-          this.measuredChunksCount += 1;
-
-          const completedChunk: ScriptChunk = {
-            ...project.chunks[i],
-            status: 'completed',
-            audioDurationSec: result.audio.durationSec,
-            cachedAudioKey: buildAudioChunkKey(project.id, targetChunk.id),
-            generationTimeMs: result.generationTimeMs,
-            errorMessage: undefined,
-          };
-
-          project = await this.persistAndNotify({
-            ...project,
-            chunks: project.chunks.map((c, idx) => (idx === i ? completedChunk : c)),
-          });
-          this.emitChunkComplete(project.id, completedChunk);
-        } catch (err) {
-          if (this.cancelRequested || isAbortError(err)) {
-            project = await this.markRemainingCancelled(project);
-            break;
+        for (const res of extraResults) {
+          if (res.status === 'fulfilled') {
+            workerSlots.push(res.value);
           }
-
-          project = await this.persistAndNotify({
-            ...project,
-            chunks: project.chunks.map((c, idx) =>
-              idx === i
-                ? {
-                    ...c,
-                    status: 'failed' as const,
-                    errorMessage: err instanceof Error ? err.message : String(err),
-                  }
-                : c
-            ),
-          });
         }
       }
 
-      if (this.pauseRequested && !this.cancelRequested) {
-        project = await this.persistAndNotify({
-          ...project,
-          chunks: project.chunks.map((c) =>
+      let cursor = 0;
+      const runSlot = async (slot: { eng: VoiceCloningEngine; handle: LoadedVoiceHandle }) => {
+        while (true) {
+          if (this.cancelRequested || this.pauseRequested) {
+            return;
+          }
+          const nextPos = cursor;
+          if (nextPos >= pendingIndices.length) {
+            return;
+          }
+          cursor += 1;
+          const chunkIdx = pendingIndices[nextPos];
+          const targetChunk = project.chunks[chunkIdx];
+          if (!targetChunk || targetChunk.status === 'completed' || targetChunk.status === 'failed') {
+            continue;
+          }
+
+          this.activeChunkId = targetChunk.id;
+          await mutateProject((curr) => ({
+            ...curr,
+            chunks: curr.chunks.map((c, idx) =>
+              idx === chunkIdx
+                ? { ...c, status: 'synthesizing' as const, errorMessage: undefined }
+                : c
+            ),
+          }));
+
+          const textToSynthesize =
+            targetChunk.normalizedText ||
+            applyPronunciationRules(targetChunk.rawText, project.pronunciationRules);
+
+          const mergedParameters = extractEngineParametersForEngine(
+            {
+              ...project.engineParameters,
+              ...targetChunk.parameterOverrides,
+            },
+            project.engineId
+          );
+
+          try {
+            const result = await slot.eng.synthesize(
+              {
+                text: textToSynthesize,
+                voiceHandle: slot.handle,
+                language: voiceProfile.language || 'en',
+                parameters: mergedParameters,
+                signal: this.activeAbortController?.signal,
+              },
+              options.onStreamChunk
+                ? (audioChunk) => options.onStreamChunk?.(targetChunk.index, targetChunk.id, audioChunk)
+                : undefined
+            );
+
+            // Write PCM audio immediately to IndexedDB (`audioChunks`) instead of keeping in RAM.
+            await saveAudioChunk({
+              projectId: project.id,
+              chunkId: targetChunk.id,
+              sampleRate: result.audio.sampleRate,
+              pcm: result.audio.samples,
+              durationSec: result.audio.durationSec,
+            });
+
+            const genTimeMs =
+              typeof result.generationTimeMs === 'number' && result.generationTimeMs > 0
+                ? result.generationTimeMs
+                : 1;
+            this.measuredTimingMsTotal += genTimeMs;
+            this.measuredCharsTotal += Math.max(1, textToSynthesize.length);
+            this.measuredChunksCount += 1;
+
+            let completedChunkRef: ScriptChunk | null = null;
+            await mutateProject((curr) => {
+              const updatedChunk: ScriptChunk = {
+                ...curr.chunks[chunkIdx],
+                status: 'completed',
+                audioDurationSec: result.audio.durationSec,
+                cachedAudioKey: buildAudioChunkKey(curr.id, targetChunk.id),
+                generationTimeMs: result.generationTimeMs,
+                errorMessage: undefined,
+              };
+              completedChunkRef = updatedChunk;
+              return {
+                ...curr,
+                chunks: curr.chunks.map((c, idx) => (idx === chunkIdx ? updatedChunk : c)),
+              };
+            });
+            if (completedChunkRef) {
+              this.emitChunkComplete(project.id, completedChunkRef);
+            }
+          } catch (err) {
+            if (this.cancelRequested || isAbortError(err)) {
+              await mutateProject((curr) => ({
+                ...curr,
+                chunks: curr.chunks.map((c) =>
+                  c.status === 'pending' || c.status === 'queued' || c.status === 'synthesizing'
+                    ? { ...c, status: 'cancelled' as const }
+                    : c
+                ),
+              }));
+              return;
+            }
+
+            await mutateProject((curr) => ({
+              ...curr,
+              chunks: curr.chunks.map((c, idx) =>
+                idx === chunkIdx
+                  ? {
+                      ...c,
+                      status: 'failed' as const,
+                      errorMessage: err instanceof Error ? err.message : String(err),
+                    }
+                  : c
+              ),
+            }));
+          }
+        }
+      };
+
+      await Promise.all(workerSlots.map((slot) => runSlot(slot)));
+
+      if (this.cancelRequested) {
+        project = await mutateProject((curr) => ({
+          ...curr,
+          chunks: curr.chunks.map((c) =>
+            c.status === 'pending' || c.status === 'queued' || c.status === 'synthesizing'
+              ? { ...c, status: 'cancelled' as const }
+              : c
+          ),
+        }));
+      } else if (this.pauseRequested) {
+        project = await mutateProject((curr) => ({
+          ...curr,
+          chunks: curr.chunks.map((c) =>
             c.status === 'queued' ? { ...c, status: 'pending' as const } : c
           ),
-        });
+        }));
       }
 
       return project;
     } finally {
+      for (const extra of ephemeralEngines) {
+        this.activeEngines.delete(extra);
+        try {
+          await extra.dispose();
+        } catch {
+          // Ignore disposal errors for pool workers.
+        }
+      }
+      this.activeEngines.clear();
       this.isRunning = false;
       this.activeChunkId = null;
       this.activeAbortController = null;

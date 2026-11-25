@@ -429,7 +429,15 @@ async function handleInit(req: Extract<PocketWorkerRequest, { type: 'init' }>): 
     { key: 'flowLmMain', role: 'flow_lm_main', label: 'FlowLM Backbone (INT8)' },
     { key: 'flowLmFlow', role: 'flow_lm_flow', label: 'Flow Matching Head (INT8)' },
     { key: 'mimiDecoder', role: 'mimi_decoder', label: 'Mimi Audio Decoder (INT8)' },
-    { key: 'mimiEncoder', role: 'mimi_encoder', label: 'Mimi Voice Encoder (INT8)' },
+    ...(req.skipEncoder
+      ? []
+      : [
+          {
+            key: 'mimiEncoder' as const,
+            role: 'mimi_encoder',
+            label: 'Mimi Voice Encoder (INT8)',
+          },
+        ]),
   ];
 
   // Load ONNX Runtime sessions sequentially to avoid peak RAM spikes.

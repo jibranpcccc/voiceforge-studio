@@ -144,6 +144,16 @@ export function DashboardPage() {
           <p className="text-xs text-[var(--vf-text-muted)] mt-1">
             {formatBytes(totalCachedBytes)} cached locally
           </p>
+          {offlineReadyModels.length < modelEntries.length && (
+            <button
+              type="button"
+              onClick={() => navigate('models')}
+              className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] text-white px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer"
+            >
+              <span>Download Models</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
 
         <div className="rounded-2xl border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4">

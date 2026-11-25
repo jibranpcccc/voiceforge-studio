@@ -297,6 +297,7 @@ export class PocketTtsEngine implements VoiceCloningEngine {
         id,
         wasmBasePath,
         wasmThreads: options.wasmThreads,
+        skipEncoder: options.skipEncoder,
         modelRevision: this.modelRevision,
         manifestEntry: this.manifestEntry,
         customBaseUrl: this.customModelBaseUrl,

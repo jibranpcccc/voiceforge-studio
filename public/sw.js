@@ -1,4 +1,4 @@
-const SHELL_CACHE_NAME = 'voiceforge-shell-v1';
+const SHELL_CACHE_NAME = 'voiceforge-shell-v2';
 const MODEL_CACHE_NAME = 'voiceforge-models-v1';
 
 const PRECACHE_RELATIVE_URLS = [
@@ -38,6 +38,26 @@ function extractBuiltAssetUrls(htmlText) {
     urls.add(normalized);
   }
   return Array.from(urls);
+}
+
+/**
+ * Attach Cross-Origin Isolation headers (COOP + COEP credentialless + CORP)
+ * to same-origin responses so SharedArrayBuffer and multi-threaded ONNX Runtime
+ * WASM work on static hosts like GitHub Pages without blocking Hugging Face downloads.
+ */
+function withCrossOriginIsolationHeaders(response) {
+  if (!response || response.status === 0 || response.type === 'opaque') {
+    return response;
+  }
+  const headers = new Headers(response.headers);
+  headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+  headers.set('Cross-Origin-Embedder-Policy', 'credentialless');
+  headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
 }
 
 self.addEventListener('install', (event) => {
@@ -83,7 +103,12 @@ self.addEventListener('activate', (event) => {
       const keys = await caches.keys();
       await Promise.all(
         keys
-          .filter((key) => key.startsWith('voiceforge-shell-') && key !== SHELL_CACHE_NAME && key !== MODEL_CACHE_NAME)
+          .filter(
+            (key) =>
+              key.startsWith('voiceforge-shell-') &&
+              key !== SHELL_CACHE_NAME &&
+              key !== MODEL_CACHE_NAME
+          )
           .map((key) => caches.delete(key))
       );
       await self.clients.claim();
@@ -119,7 +144,7 @@ self.addEventListener('fetch', (event) => {
   // Never intercept cross-origin requests (e.g. Hugging Face model downloads).
   if (url.origin !== scopeUrl.origin) return;
 
-  // Never intercept self-hosted large model weight downloads (if hosted under ./models/).
+  // Never cache self-hosted large model weight files in shell cache, but ensure CORP/COEP if requested.
   const relPath = url.pathname.startsWith(scopeUrl.pathname)
     ? url.pathname.slice(scopeUrl.pathname.length)
     : url.pathname;
@@ -134,12 +159,12 @@ self.addEventListener('fetch', (event) => {
           if (networkResponse && networkResponse.ok) {
             await cache.put(resolveScopedUrl('./index.html'), networkResponse.clone());
           }
-          return networkResponse;
+          return withCrossOriginIsolationHeaders(networkResponse);
         } catch {
           const cachedIndex =
             (await cache.match(resolveScopedUrl('./index.html'))) ||
             (await cache.match(resolveScopedUrl('./')));
-          if (cachedIndex) return cachedIndex;
+          if (cachedIndex) return withCrossOriginIsolationHeaders(cachedIndex);
           throw new Error('Offline and app shell index is not cached.');
         }
       })()
@@ -164,10 +189,10 @@ self.addEventListener('fetch', (event) => {
 
         if (cached) {
           event.waitUntil(fetchPromise);
-          return cached;
+          return withCrossOriginIsolationHeaders(cached);
         }
         const networkResponse = await fetchPromise;
-        if (networkResponse) return networkResponse;
+        if (networkResponse) return withCrossOriginIsolationHeaders(networkResponse);
         return new Response('Offline', { status: 503, statusText: 'Offline' });
       })()
     );
@@ -180,13 +205,19 @@ self.addEventListener('fetch', (event) => {
       (async () => {
         const cache = await caches.open(SHELL_CACHE_NAME);
         const cached = (await cache.match(request.url)) || (await cache.match(request));
-        if (cached) return cached;
+        if (cached) return withCrossOriginIsolationHeaders(cached);
         const response = await fetch(request);
         if (response && response.ok) {
           await cache.put(request.url, response.clone());
         }
-        return response;
+        return withCrossOriginIsolationHeaders(response);
       })()
     );
+    return;
   }
+
+  // Ensure any other same-origin subresource/worker script also receives COOP/COEP headers.
+  event.respondWith(
+    fetch(request).then((response) => withCrossOriginIsolationHeaders(response))
+  );
 });

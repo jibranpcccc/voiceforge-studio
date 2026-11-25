@@ -361,6 +361,7 @@ async function openProductionApp(
   });
 
   await page.goto(baseURL, { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => window.crossOriginIsolated === true, { timeout: 20_000 });
   return { browser, context, page, consoleErrors, pageErrors, networkRequests };
 }
 

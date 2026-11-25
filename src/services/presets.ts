@@ -148,11 +148,11 @@ export const STUDIO_PRESETS: Record<StudioPresetId, StudioPresetConfig> = {
     id: 'natural-narration',
     name: 'Natural Narration',
     description:
-      'Balanced conversational cadence with natural prosody, gentle compression, and clean room tone.',
+      'Balanced conversational cadence using Pocket TTS native 1-step distilled flow matching with gentle compression and clean room tone.',
     executionMode: 'balanced',
     engineParameters: {
       temperature: 0.7,
-      lsdSteps: 2,
+      lsdSteps: 1,
       framesAfterEos: 2,
       exaggeration: 0.5,
       repetitionPenalty: 1.2,

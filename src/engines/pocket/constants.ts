@@ -175,6 +175,7 @@ export type PocketWorkerRequest =
       id: number;
       wasmBasePath: string;
       wasmThreads?: number;
+      skipEncoder?: boolean;
       modelRevision: string;
       manifestEntry?: ModelManifestEntry;
       customBaseUrl?: string;

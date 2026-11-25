@@ -53,6 +53,8 @@ export function SettingsPage() {
   const defaultExportSampleRate = useAppStore((s) => s.defaultExportSampleRate);
   const setDefaultExportSampleRate = useAppStore((s) => s.setDefaultExportSampleRate);
   const hardwareCapabilities = useAppStore((s) => s.hardwareCapabilities);
+  const parallelWorkers = useAppStore((s) => s.parallelWorkers);
+  const setParallelWorkers = useAppStore((s) => s.setParallelWorkers);
   const wipeAllData = useAppStore((s) => s.wipeAllData);
   const isWipingData = useAppStore((s) => s.isWipingData);
 
@@ -128,6 +130,29 @@ export function SettingsPage() {
               </button>
             );
           })}
+        </div>
+
+        <div className="border-t border-[var(--vf-border-subtle)] pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <label htmlFor="parallel-workers-select" className="block text-xs font-semibold">
+              Parallel Workers (Long-Form Pocket TTS Speed)
+            </label>
+            <p className="text-[11px] text-[var(--vf-text-muted)] mt-0.5">
+              Runs multiple Web Workers in parallel across paragraphs on multi-core CPUs (~250–350 MB extra RAM per worker).
+            </p>
+          </div>
+          <select
+            id="parallel-workers-select"
+            value={parallelWorkers}
+            onChange={(e) => setParallelWorkers(Number(e.target.value))}
+            className="rounded-xl border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-3 py-2 text-xs text-[var(--vf-text)] focus:outline-none focus:border-[var(--vf-accent)] shrink-0"
+          >
+            <option value={0}>Auto (Recommended)</option>
+            <option value={1}>1 Worker (Lowest RAM)</option>
+            <option value={2}>2 Workers</option>
+            <option value={3}>3 Workers</option>
+            <option value={4}>4 Workers (Max Throughput)</option>
+          </select>
         </div>
       </section>
 

@@ -71,3 +71,5 @@ export {
   measureLufs,
   removeDcOffsetInPlace,
 } from './dsp';
+
+export { OrderedStreamAudioPlayer } from './streamPlayer';

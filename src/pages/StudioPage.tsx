@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   BookOpen,
   CheckCircle2,
+  Cpu,
   Download,
   History,
   Loader2,
@@ -11,9 +12,12 @@ import {
   Save,
   ShieldAlert,
   Sparkles,
+  Volume2,
+  VolumeX,
   Wand2,
 } from 'lucide-react';
 import {
+  OrderedStreamAudioPlayer,
   masterNarrationChunks,
   type MasteringExtraOptions,
 } from '../audio';
@@ -34,7 +38,11 @@ import {
   loadProjectAudioChunkMap,
 } from '../components/studio';
 import { STUDIO_PRESET_LIST, extractEngineParametersForEngine } from '../services/presets';
-import { computeQueueState } from '../services/narrationQueue';
+import {
+  computeQueueState,
+  narrationQueue,
+  type RunQueueOptions,
+} from '../services/narrationQueue';
 import {
   getDefaultMaxCharsForEngine,
   segmentScript,
@@ -47,6 +55,7 @@ import {
   type GenerationHistoryEntry,
 } from '../storage/db';
 import {
+  resolveEffectiveWorkerCount,
   useAppStore,
   useModelStore,
   useProjectStore,
@@ -65,6 +74,9 @@ import type {
 export function StudioPage() {
   const customModelBaseUrl = useAppStore((s) => s.customModelBaseUrl);
   const executionMode = useAppStore((s) => s.executionMode);
+  const parallelWorkers = useAppStore((s) => s.parallelWorkers);
+  const setParallelWorkers = useAppStore((s) => s.setParallelWorkers);
+  const hardwareCapabilities = useAppStore((s) => s.hardwareCapabilities);
 
   const voices = useVoiceStore((s) => s.voices);
   const defaultVoiceId = useVoiceStore((s) => s.defaultVoiceId);
@@ -146,6 +158,29 @@ export function StudioPage() {
   const [pronunciationOpen, setPronunciationOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyEntries, setHistoryEntries] = useState<GenerationHistoryEntry[]>([]);
+  const [liveStreamEnabled, setLiveStreamEnabled] = useState(true);
+  const [isStreamingLive, setIsStreamingLive] = useState(false);
+  const streamPlayerRef = useRef<OrderedStreamAudioPlayer | null>(null);
+
+  const stopLiveStream = useCallback(() => {
+    const player = streamPlayerRef.current;
+    streamPlayerRef.current = null;
+    setIsStreamingLive(false);
+    if (player) {
+      player.stop();
+      void player.dispose();
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      const player = streamPlayerRef.current;
+      streamPlayerRef.current = null;
+      if (player) {
+        void player.dispose();
+      }
+    };
+  }, []);
 
   const registry = useMemo(
     () => ensureDefaultEnginesRegistered(customModelBaseUrl),
@@ -510,6 +545,61 @@ export function StudioPage() {
     setHistoryEntries(updatedHistory);
   };
 
+  const executeQueueWithStreaming = async (
+    project: NarrationProject,
+    runner: (projectId: string, options?: RunQueueOptions) => Promise<NarrationProject>,
+    voiceProfile: VoiceProfile | null
+  ): Promise<NarrationProject> => {
+    const pendingChunks = project.chunks.filter(
+      (c) => c.status !== 'completed' && c.status !== 'failed'
+    );
+    const hwCores =
+      hardwareCapabilities?.hardwareConcurrency ??
+      (typeof navigator !== 'undefined' && typeof navigator.hardwareConcurrency === 'number'
+        ? navigator.hardwareConcurrency
+        : 4);
+    const effectiveWorkers = resolveEffectiveWorkerCount(
+      parallelWorkers,
+      hwCores,
+      hardwareCapabilities?.estimatedDeviceMemoryMb ?? null,
+      pendingChunks.length,
+      project.engineId
+    );
+
+    stopLiveStream();
+    let unsubChunkComplete: (() => void) | null = null;
+    let player: OrderedStreamAudioPlayer | null = null;
+
+    if (liveStreamEnabled && pendingChunks.length > 0) {
+      const startIndex = pendingChunks[0].index;
+      player = new OrderedStreamAudioPlayer(undefined, startIndex);
+      await player.prime();
+      streamPlayerRef.current = player;
+      setIsStreamingLive(true);
+      unsubChunkComplete = narrationQueue.subscribeChunkComplete((projId, finishedChunk) => {
+        if (projId === project.id && player) {
+          player.markChunkFinished(finishedChunk.index, finishedChunk.pauseAfterMs ?? sentencePauseMs);
+        }
+      });
+    }
+
+    try {
+      return await runner(project.id, {
+        ...(voiceProfile ? { voiceProfile } : {}),
+        parallelWorkers: effectiveWorkers,
+        customModelBaseUrl: customModelBaseUrl || undefined,
+        onStreamChunk: player
+          ? (chunkIdx, _chunkId, audioChunk) => {
+              player?.pushChunk(chunkIdx, audioChunk.samples, audioChunk.sampleRate);
+            }
+          : undefined,
+      });
+    } finally {
+      unsubChunkComplete?.();
+      setIsStreamingLive(false);
+    }
+  };
+
   const handleGenerate = async () => {
     setStudioError(null);
     setStudioNotice(null);
@@ -585,9 +675,14 @@ export function StudioPage() {
         setActiveProjectId(project.id);
       }
 
-      const finished = await startProjectQueue(project.id, { voiceProfile: selectedVoice });
+      const finished = await executeQueueWithStreaming(
+        project,
+        startProjectQueue,
+        selectedVoice
+      );
       await recordRunInHistory(finished);
     } catch (err) {
+      stopLiveStream();
       setInitProgress(null);
       setStudioError(err instanceof Error ? err.message : String(err));
     }
@@ -596,7 +691,7 @@ export function StudioPage() {
   const runRecoveredQueueAction = async (
     action: (
       projectId: string,
-      options?: { voiceProfile?: VoiceProfile }
+      options?: RunQueueOptions
     ) => Promise<NarrationProject>
   ) => {
     if (!activeProject) return;
@@ -624,12 +719,10 @@ export function StudioPage() {
         }
       );
       setInitProgress(null);
-      const finished = await action(
-        activeProject.id,
-        voiceToUse ? { voiceProfile: voiceToUse } : undefined
-      );
+      const finished = await executeQueueWithStreaming(activeProject, action, voiceToUse);
       await recordRunInHistory(finished);
     } catch (err) {
+      stopLiveStream();
       setInitProgress(null);
       setStudioError(err instanceof Error ? err.message : String(err));
     }
@@ -940,24 +1033,77 @@ export function StudioPage() {
 
           {/* Primary Generate Action & Queue Progress */}
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <button
-              type="button"
-              disabled={
-                queueState.isRunning ||
-                !scriptText.trim() ||
-                !selectedVoice ||
-                !voiceCompatible
-              }
-              onClick={() => void handleGenerate()}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-[#7C5CFF] text-white hover:bg-[#6A48F5] disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-[#7C5CFF]/20 transition"
-            >
-              {queueState.isRunning ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Wand2 className="w-4 h-4" />
+            <div className="flex flex-wrap items-center gap-2.5">
+              <button
+                type="button"
+                disabled={
+                  queueState.isRunning ||
+                  !scriptText.trim() ||
+                  !selectedVoice ||
+                  !voiceCompatible
+                }
+                onClick={() => void handleGenerate()}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-[#7C5CFF] text-white hover:bg-[#6A48F5] disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-[#7C5CFF]/20 transition"
+              >
+                {queueState.isRunning ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Wand2 className="w-4 h-4" />
+                )}
+                {queueState.isRunning ? 'Synthesizing Narration...' : 'Generate Narration'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (isStreamingLive) {
+                    stopLiveStream();
+                    setLiveStreamEnabled(false);
+                  } else {
+                    setLiveStreamEnabled((prev) => !prev);
+                  }
+                }}
+                title="Stream audio chunks live as they generate (~0.6s start latency)"
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border transition ${
+                  liveStreamEnabled
+                    ? 'border-[#7C5CFF]/40 bg-[#7C5CFF]/15 text-[#7C5CFF]'
+                    : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
+                }`}
+              >
+                {liveStreamEnabled ? (
+                  <Volume2 className="w-3.5 h-3.5" />
+                ) : (
+                  <VolumeX className="w-3.5 h-3.5" />
+                )}
+                <span>
+                  {isStreamingLive
+                    ? 'Streaming Live (Mute)'
+                    : liveStreamEnabled
+                      ? 'Live Stream: ON'
+                      : 'Live Stream: OFF'}
+                </span>
+              </button>
+
+              {selectedEngineId === 'pocket-tts' && (
+                <label className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121622] px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-300">
+                  <Cpu className="w-3.5 h-3.5 text-[#7C5CFF]" />
+                  <span>Workers:</span>
+                  <select
+                    aria-label="Parallel synthesis workers"
+                    value={parallelWorkers}
+                    disabled={queueState.isRunning}
+                    onChange={(e) => setParallelWorkers(Number(e.target.value))}
+                    className="bg-transparent font-mono text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                  >
+                    <option value={0}>Auto</option>
+                    <option value={1}>1</option>
+                    <option value={2}>2</option>
+                    <option value={3}>3</option>
+                    <option value={4}>4</option>
+                  </select>
+                </label>
               )}
-              {queueState.isRunning ? 'Synthesizing Narration...' : 'Generate Narration'}
-            </button>
+            </div>
 
             <span className="text-xs text-slate-500 dark:text-slate-400">
               {navigatorItems.length} synthesis segment{navigatorItems.length === 1 ? '' : 's'} ·
@@ -970,7 +1116,10 @@ export function StudioPage() {
             activeChunkIndex={activeQueueChunkIndex}
             onPause={pauseProjectQueue}
             onResume={() => void handleResumeQueue()}
-            onCancel={() => void cancelProjectQueue()}
+            onCancel={() => {
+              stopLiveStream();
+              void cancelProjectQueue();
+            }}
             onRetryFailed={() => void handleRetryFailed()}
             hasPendingWork={hasPendingWork}
           />

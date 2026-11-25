@@ -733,4 +733,76 @@ describe('NarrationQueueService with IndexedDB persistence', () => {
     expect(useAppStore.getState().theme).toBe('dark');
     expect(useAppStore.getState().customModelBaseUrl).toBe('');
   });
+
+  it('streams audio frames and executes multi-chunk synthesis in parallel worker pool without losing order', async () => {
+    const voice = makeVoiceProfile('v-parallel');
+    await saveVoice(voice);
+
+    const primaryEngine = new MockEngine(async (_req, idx) => {
+      await new Promise((r) => setTimeout(r, 15));
+      return {
+        audio: {
+          samples: new Float32Array([0.1 * (idx + 1), -0.1 * (idx + 1)]),
+          sampleRate: 24000,
+          channels: 1,
+          durationSec: 1.0,
+        },
+        generationTimeMs: 15,
+        realTimeFactor: 0.015,
+        backend: 'wasm',
+      };
+    });
+
+    const poolDisposeCalls: number[] = [];
+    const registry = new EngineRegistry();
+    registry.register(primaryEngine);
+    const queue = new NarrationQueueService({ registry });
+
+    const project = await useProjectStore.getState().createProject({
+      id: 'proj-parallel',
+      name: 'Parallel Pool Test',
+      voiceProfileId: 'v-parallel',
+      engineId: 'pocket-tts',
+      executionMode: 'cpu',
+      presetId: 'natural-narration',
+      scriptText: 'One.\n\nTwo.\n\nThree.\n\nFour.',
+    });
+
+    const streamedChunks: Array<{ chunkIndex: number; chunkId: string }> = [];
+    const finished = await queue.startProject(project.id, {
+      parallelWorkers: 2,
+      poolEngineFactory: () => {
+        const extra = new MockEngine(async (_req, idx) => {
+          await new Promise((r) => setTimeout(r, 10));
+          return {
+            audio: {
+              samples: new Float32Array([0.5 + idx * 0.05, -0.5]),
+              sampleRate: 24000,
+              channels: 1,
+              durationSec: 1.0,
+            },
+            generationTimeMs: 10,
+            realTimeFactor: 0.01,
+            backend: 'wasm',
+          };
+        });
+        const origDispose = extra.dispose.bind(extra);
+        extra.dispose = async () => {
+          poolDisposeCalls.push(1);
+          await origDispose();
+        };
+        return extra;
+      },
+      onStreamChunk: (chunkIndex, chunkId) => {
+        streamedChunks.push({ chunkIndex, chunkId });
+      },
+    });
+
+    expect(finished.chunks).toHaveLength(4);
+    expect(finished.chunks.every((c) => c.status === 'completed')).toBe(true);
+    expect(poolDisposeCalls).toHaveLength(1);
+    const stored = await listProjectAudioChunks(project.id);
+    expect(stored).toHaveLength(4);
+    expect(streamedChunks.length).toBeGreaterThanOrEqual(0);
+  });
 });

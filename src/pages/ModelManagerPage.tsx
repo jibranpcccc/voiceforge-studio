@@ -366,29 +366,51 @@ export function ModelManagerPage() {
                   </p>
                 </div>
 
-                {/* Precision selector for Chatterbox */}
-                {isChatterbox && (
-                  <div className="flex items-center gap-2 shrink-0">
-                    <label
-                      htmlFor="chatterbox-precision-select"
-                      className="text-xs text-[var(--vf-text-muted)]"
+                {/* Header Actions: Download/Cancel prominently at top-right alongside Precision */}
+                <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+                  {isChatterbox && (
+                    <div className="flex items-center gap-2">
+                      <label
+                        htmlFor="chatterbox-precision-select"
+                        className="text-xs text-[var(--vf-text-muted)]"
+                      >
+                        Precision:
+                      </label>
+                      <select
+                        id="chatterbox-precision-select"
+                        value={chatterboxPrecision}
+                        onChange={(e) =>
+                          setChatterboxPrecision(e.target.value as ChatterboxLmPrecision)
+                        }
+                        disabled={isDownloading}
+                        className="rounded-xl border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-3 py-1.5 text-xs font-mono text-[var(--vf-text)] focus:outline-none focus:border-[var(--vf-accent)]"
+                      >
+                        <option value="q4f16">q4f16 (WebGPU f16)</option>
+                        <option value="q4">q4 (WebGPU f32 / WASM)</option>
+                      </select>
+                    </div>
+                  )}
+
+                  {!isDownloading ? (
+                    <button
+                      type="button"
+                      onClick={() => void handleDownload(activeEntry, isQ4)}
+                      className="inline-flex items-center gap-2 rounded-xl bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] text-white px-4 py-2 text-xs font-semibold shadow-sm shadow-[#7C5CFF]/25 transition-colors cursor-pointer"
                     >
-                      Precision:
-                    </label>
-                    <select
-                      id="chatterbox-precision-select"
-                      value={chatterboxPrecision}
-                      onChange={(e) =>
-                        setChatterboxPrecision(e.target.value as ChatterboxLmPrecision)
-                      }
-                      disabled={isDownloading}
-                      className="rounded-xl border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-3 py-1.5 text-xs font-mono text-[var(--vf-text)] focus:outline-none focus:border-[var(--vf-accent)]"
+                      <Download className="h-3.5 w-3.5" />
+                      <span>{offlineReady ? 'Verify / Re-sync Cache' : 'Download & Cache'}</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleCancel(activeEntry.engineId, isQ4)}
+                      className="inline-flex items-center gap-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 text-xs font-semibold transition-colors cursor-pointer"
                     >
-                      <option value="q4f16">q4f16 (WebGPU f16)</option>
-                      <option value="q4">q4 (WebGPU f32 / WASM)</option>
-                    </select>
-                  </div>
-                )}
+                      <XCircle className="h-3.5 w-3.5" />
+                      <span>Cancel Download</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Metadata Grid */}
@@ -526,28 +548,8 @@ export function ModelManagerPage() {
                 </div>
               )}
 
-              {/* Action Buttons */}
+              {/* Secondary Management Actions */}
               <div className="flex flex-wrap items-center gap-2.5">
-                {!isDownloading ? (
-                  <button
-                    type="button"
-                    onClick={() => void handleDownload(activeEntry, isQ4)}
-                    className="inline-flex items-center gap-2 rounded-xl bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] text-white px-4 py-2 text-xs font-semibold transition-colors cursor-pointer"
-                  >
-                    <Download className="h-3.5 w-3.5" />
-                    <span>{offlineReady ? 'Verify / Re-sync Cache' : 'Download & Cache'}</span>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => handleCancel(activeEntry.engineId, isQ4)}
-                    className="inline-flex items-center gap-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 text-xs font-semibold transition-colors cursor-pointer"
-                  >
-                    <XCircle className="h-3.5 w-3.5" />
-                    <span>Cancel Download</span>
-                  </button>
-                )}
-
                 <button
                   type="button"
                   disabled={isDownloading}

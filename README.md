@@ -10,7 +10,7 @@
 
 - **Zero-Backend Static SPA:** Built with React 19, TypeScript, Zustand, Vite, and Tailwind CSS. All ONNX Runtime Web `.wasm` and `.mjs` runtime files are bundled under `public/runtime/` (zero external runtime CDNs).
 - **Dual Client-Side Inference Engines:**
-  - **Pocket TTS (`pocket-tts`, Default Engine):** `KevinAHM/pocket-tts-onnx` (`english_2026-04` INT8, pinned commit `58a6d00cf13d239b6748cb0769f35c580a8f606c`, `146,243,590 B` / `146.24 MB` across 8 files). Runs via ONNX Runtime Web WASM SIMD (`numThreads = 1` without COOP/COEP headers) inside a dedicated Web Worker (`src/workers/pocket.worker.ts`) and supports zero-shot voice cloning (`mimi_encoder_int8.onnx`).
+  - **Pocket TTS (`pocket-tts`, Default Engine):** `KevinAHM/pocket-tts-onnx` (`english_2026-04` INT8, pinned commit `58a6d00cf13d239b6748cb0769f35c580a8f606c`, `146,243,590 B` / `146.24 MB` across 8 files). Runs via ONNX Runtime Web WASM SIMD inside a dedicated Web Worker (`src/workers/pocket.worker.ts`)—automatically unlocking **multi-threaded WASM (`numThreads = 4`)** via `public/sw.js` COOP/COEP headers, plus a **parallel Web Worker pool** (`Auto` / `1`–`4` workers) and **live ordered audio streaming** (`OrderedStreamAudioPlayer`) for multi-paragraph scripts. Supports true zero-shot voice cloning via `mimi_encoder_int8.onnx`.
   - **Chatterbox ONNX (`chatterbox`, Optional WebGPU Engine):** `onnx-community/chatterbox-ONNX` (pinned commit `3cab09af388d3f02bba43443fce88c1f4525ac43`, `1,499,431,645 B` / `1.50 GB` in `q4f16` across 13 files; `1,548,314,008 B` / `1.55 GB` in `q4`). Runs in a dedicated Web Worker (`src/workers/chatterbox.worker.ts`) with pre-flight WebGPU `shader-f16` probing, emotion `exaggeration` control, and automatic `q4` fallback when `shader-f16` is unavailable.
 - **Studio Workspace Views:**
   - **Dashboard** (`#/dashboard`) — Hardware capabilities summary, quick actions, and offline model readiness.
@@ -20,7 +20,7 @@
   - **Audio Lab** (`#/lab`) — Side-by-side parameter testing and waveform inspection.
   - **Model Manager** (`#/models`) — Download pinned Hugging Face weights or self-hosted mirrors, verify exact `sizeBytes` + SHA-256 checksums, import a local folder bundle offline, or switch Chatterbox precision (`q4f16` / `q4`).
   - **Settings** (`#/settings`) — Execution mode (`quality`, `balanced`, `cpu`), theme (`dark` / `light`), default export format/sample rate, `Self-Hosted Model Base URL` (`./models/` or `./models/{engineId}/`), and full local data wipe.
-- **Offline PWA Shell (`public/sw.js`):** Precaches the app shell, hashed Vite bundles, `model-manifests/models.json`, and local `runtime/ort-wasm*` binaries in `voiceforge-shell-v1`, while storing verified AI model weights separately in `voiceforge-models-v1` (Cache Storage with OPFS fallback) and bypassing cross-origin and `./models/` weight fetches in the service worker.
+- **Offline PWA Shell & COOP/COEP Isolation (`public/sw.js`):** Precaches the app shell, hashed Vite bundles, `model-manifests/models.json`, and local `runtime/ort-wasm*` binaries in `voiceforge-shell-v2` with `Cross-Origin-Opener-Policy: same-origin` + `Cross-Origin-Embedder-Policy: credentialless` headers (unlocking `SharedArrayBuffer` / multi-threaded WASM on GitHub Pages without blocking Hugging Face downloads), while storing verified AI model weights separately in `voiceforge-models-v1` (Cache Storage with OPFS fallback).
 
 ---
 
@@ -112,7 +112,7 @@ Measured in Playwright against `http://127.0.0.1:4173/#/poc` on Windows x64 (`In
 
 ## Known Limitations
 
-- **Single-threaded WASM by default:** Static hosts without COOP/COEP headers run ONNX Runtime Web WASM with `numThreads = 1` (`crossOriginIsolated === false`). Pocket TTS still achieves `1.46x–1.57x` RTF on desktop Chrome/Edge.
+- **Multi-threaded WASM via Service Worker:** Static hosts without server-level COOP/COEP headers upgrade to `crossOriginIsolated = true` (`numThreads = 4`) on first Service Worker activation (`voiceforge-shell-v2`), improving single-chunk Pocket TTS speed (`11.12 s` -> `6.43 s` / `528 ms` first-chunk TTFB) alongside the parallel worker pool for long scripts. On browsers blocking Service Workers, Pocket TTS falls back cleanly to single-threaded WASM (`numThreads = 1`).
 - **Chatterbox `1.50 GB` download & hardware requirements:** Chatterbox (`q4f16` / `q4`) requires substantial browser storage quota and ~`2.4 GB` estimated memory (`q4f16` requires WebGPU `shader-f16`). Its WASM CPU fallback runs `~5.8x` slower than real-time.
 - **Mobile / iOS memory limits:** Mobile browsers—especially iOS Safari—impose strict per-tab RAM limits; Pocket TTS (`~350–600 MB` steady-state RAM) is strongly preferred over Chatterbox on constrained devices.
 - **English-focused default models:** Both integrated engines target English (`en`).

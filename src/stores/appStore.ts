@@ -37,6 +37,7 @@ const STORAGE_EXEC_MODE_KEY = 'vf_execution_mode';
 const STORAGE_CUSTOM_BASE_URL_KEY = 'vf_custom_model_base_url';
 const STORAGE_EXPORT_FORMAT_KEY = 'vf_default_export_format';
 const STORAGE_EXPORT_SAMPLE_RATE_KEY = 'vf_default_export_sample_rate';
+const STORAGE_PARALLEL_WORKERS_KEY = 'vf_parallel_workers';
 
 function readStorage(key: string): string | null {
   try {
@@ -104,12 +105,46 @@ function loadInitialExportSampleRate(): ExportSampleRate {
   return 'native';
 }
 
+function loadInitialParallelWorkers(): number {
+  const saved = readStorage(STORAGE_PARALLEL_WORKERS_KEY);
+  const parsed = saved !== null ? Number(saved) : Number.NaN;
+  if (Number.isInteger(parsed) && parsed >= 0 && parsed <= 4) {
+    return parsed;
+  }
+  return 0; // 0 = Auto
+}
+
+/**
+ * Resolve how many parallel synthesis workers to run for multi-chunk narration.
+ * Setting `0` = Auto (1 on <4 GB devices; up to 3 on >=8-core desktops).
+ */
+export function resolveEffectiveWorkerCount(
+  setting: number,
+  hardwareConcurrency: number,
+  estimatedDeviceMemoryMb: number | null,
+  pendingChunkCount: number,
+  engineId: string
+): number {
+  if (engineId !== 'pocket-tts' || pendingChunkCount <= 1) {
+    return 1;
+  }
+  if (setting >= 1) {
+    return Math.min(4, Math.floor(setting), pendingChunkCount);
+  }
+  if (estimatedDeviceMemoryMb !== null && estimatedDeviceMemoryMb < 4096) {
+    return 1;
+  }
+  const cores = Number.isFinite(hardwareConcurrency) && hardwareConcurrency > 0 ? hardwareConcurrency : 4;
+  return Math.min(3, Math.max(1, Math.floor(cores / 4)), pendingChunkCount);
+}
+
 export interface AppState {
   theme: AppTheme;
   executionMode: ExecutionMode;
   customModelBaseUrl: string;
   defaultExportFormat: ExportFormat;
   defaultExportSampleRate: ExportSampleRate;
+  parallelWorkers: number;
   hardwareCapabilities: HardwareCapabilities | null;
   hardwareReport: Record<string, HardwareCompatibilityReport>;
   hardwareLoading: boolean;
@@ -123,6 +158,7 @@ export interface AppState {
   setCustomModelBaseUrl: (url: string) => void;
   setDefaultExportFormat: (format: ExportFormat) => void;
   setDefaultExportSampleRate: (sampleRate: ExportSampleRate) => void;
+  setParallelWorkers: (workers: number) => void;
   setActiveRoute: (route: AppRoute) => void;
   detectHardware: (registry?: EngineRegistry) => Promise<HardwareCapabilities>;
   wipeAllData: () => Promise<void>;
@@ -134,6 +170,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   customModelBaseUrl: readStorage(STORAGE_CUSTOM_BASE_URL_KEY) ?? '',
   defaultExportFormat: loadInitialExportFormat(),
   defaultExportSampleRate: loadInitialExportSampleRate(),
+  parallelWorkers: loadInitialParallelWorkers(),
   hardwareCapabilities: null,
   hardwareReport: {},
   hardwareLoading: false,
@@ -171,6 +208,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   setDefaultExportSampleRate: (defaultExportSampleRate) => {
     writeStorage(STORAGE_EXPORT_SAMPLE_RATE_KEY, String(defaultExportSampleRate));
     set({ defaultExportSampleRate });
+  },
+
+  setParallelWorkers: (workers) => {
+    const clamped = Number.isFinite(workers) ? Math.max(0, Math.min(4, Math.floor(workers))) : 0;
+    writeStorage(STORAGE_PARALLEL_WORKERS_KEY, String(clamped));
+    set({ parallelWorkers: clamped });
   },
 
   setActiveRoute: (activeRoute) => {
