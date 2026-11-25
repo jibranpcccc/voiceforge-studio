@@ -13,21 +13,30 @@ import {
   type HardwareCapabilities,
 } from '../services/hardware';
 import { clearAllUserData } from '../storage/db';
-import type { ExecutionMode, HardwareCompatibilityReport } from '../types';
+import type {
+  ExecutionMode,
+  ExportFormat,
+  ExportSampleRate,
+  HardwareCompatibilityReport,
+} from '../types';
 
 export type AppTheme = 'dark' | 'light';
 export type AppRoute =
+  | 'dashboard'
+  | 'clone'
   | 'studio'
   | 'voices'
-  | 'models'
   | 'projects'
-  | 'audio-lab'
+  | 'lab'
+  | 'models'
   | 'settings'
   | 'poc';
 
 const STORAGE_THEME_KEY = 'vf_theme';
 const STORAGE_EXEC_MODE_KEY = 'vf_execution_mode';
 const STORAGE_CUSTOM_BASE_URL_KEY = 'vf_custom_model_base_url';
+const STORAGE_EXPORT_FORMAT_KEY = 'vf_default_export_format';
+const STORAGE_EXPORT_SAMPLE_RATE_KEY = 'vf_default_export_sample_rate';
 
 function readStorage(key: string): string | null {
   try {
@@ -73,10 +82,34 @@ function loadInitialExecutionMode(): ExecutionMode {
   return 'balanced';
 }
 
+function loadInitialExportFormat(): ExportFormat {
+  const saved = readStorage(STORAGE_EXPORT_FORMAT_KEY);
+  if (
+    saved === 'wav16' ||
+    saved === 'wav24' ||
+    saved === 'mp3_128' ||
+    saved === 'mp3_192' ||
+    saved === 'mp3_256' ||
+    saved === 'mp3_320'
+  ) {
+    return saved;
+  }
+  return 'wav16';
+}
+
+function loadInitialExportSampleRate(): ExportSampleRate {
+  const saved = readStorage(STORAGE_EXPORT_SAMPLE_RATE_KEY);
+  if (saved === '44100') return 44100;
+  if (saved === '48000') return 48000;
+  return 'native';
+}
+
 export interface AppState {
   theme: AppTheme;
   executionMode: ExecutionMode;
   customModelBaseUrl: string;
+  defaultExportFormat: ExportFormat;
+  defaultExportSampleRate: ExportSampleRate;
   hardwareCapabilities: HardwareCapabilities | null;
   hardwareReport: Record<string, HardwareCompatibilityReport>;
   hardwareLoading: boolean;
@@ -88,6 +121,8 @@ export interface AppState {
   toggleTheme: () => void;
   setExecutionMode: (mode: ExecutionMode) => void;
   setCustomModelBaseUrl: (url: string) => void;
+  setDefaultExportFormat: (format: ExportFormat) => void;
+  setDefaultExportSampleRate: (sampleRate: ExportSampleRate) => void;
   setActiveRoute: (route: AppRoute) => void;
   detectHardware: (registry?: EngineRegistry) => Promise<HardwareCapabilities>;
   wipeAllData: () => Promise<void>;
@@ -97,11 +132,13 @@ export const useAppStore = create<AppState>((set, get) => ({
   theme: loadInitialTheme(),
   executionMode: loadInitialExecutionMode(),
   customModelBaseUrl: readStorage(STORAGE_CUSTOM_BASE_URL_KEY) ?? '',
+  defaultExportFormat: loadInitialExportFormat(),
+  defaultExportSampleRate: loadInitialExportSampleRate(),
   hardwareCapabilities: null,
   hardwareReport: {},
   hardwareLoading: false,
   hardwareError: null,
-  activeRoute: 'studio',
+  activeRoute: 'dashboard',
   isWipingData: false,
 
   setTheme: (theme) => {
@@ -124,6 +161,16 @@ export const useAppStore = create<AppState>((set, get) => ({
     const clean = url.trim();
     writeStorage(STORAGE_CUSTOM_BASE_URL_KEY, clean);
     set({ customModelBaseUrl: clean });
+  },
+
+  setDefaultExportFormat: (defaultExportFormat) => {
+    writeStorage(STORAGE_EXPORT_FORMAT_KEY, defaultExportFormat);
+    set({ defaultExportFormat });
+  },
+
+  setDefaultExportSampleRate: (defaultExportSampleRate) => {
+    writeStorage(STORAGE_EXPORT_SAMPLE_RATE_KEY, String(defaultExportSampleRate));
+    set({ defaultExportSampleRate });
   },
 
   setActiveRoute: (activeRoute) => {
@@ -171,6 +218,8 @@ export const useAppStore = create<AppState>((set, get) => ({
         theme: 'dark',
         executionMode: 'balanced',
         customModelBaseUrl: '',
+        defaultExportFormat: 'wav16',
+        defaultExportSampleRate: 'native',
         hardwareError: null,
         isWipingData: false,
       });

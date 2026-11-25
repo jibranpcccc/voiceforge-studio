@@ -1,1 +1,82 @@
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
+:root,
+[data-theme="light"] {
+  --vf-bg: #f4f6fb;
+  --vf-surface: #ffffff;
+  --vf-surface-elevated: #f8f9fd;
+  --vf-surface-muted: #eef1f7;
+  --vf-border: #dce1ee;
+  --vf-border-subtle: #e7ebf5;
+  --vf-text: #0f1422;
+  --vf-text-muted: #525d78;
+  --vf-text-subtle: #78839e;
+  --vf-accent: #6d4aff;
+  --vf-accent-hover: #5b36f5;
+  --vf-accent-soft: rgba(109, 74, 255, 0.12);
+  --vf-success: #059669;
+  --vf-warning: #d97706;
+  --vf-danger: #dc2626;
+  color-scheme: light;
+}
+
+.dark,
+[data-theme="dark"] {
+  --vf-bg: #0b0d12;
+  --vf-surface: #121622;
+  --vf-surface-elevated: #171c2b;
+  --vf-surface-muted: #1b2234;
+  --vf-border: #252c40;
+  --vf-border-subtle: #1d2334;
+  --vf-text: #eef1f8;
+  --vf-text-muted: #98a2bd;
+  --vf-text-subtle: #6e7894;
+  --vf-accent: #7c5cff;
+  --vf-accent-hover: #8f74ff;
+  --vf-accent-soft: rgba(124, 92, 255, 0.16);
+  --vf-success: #34d399;
+  --vf-warning: #fbbf24;
+  --vf-danger: #f87171;
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  background-color: var(--vf-bg);
+  color: var(--vf-text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom sleek range inputs for studio sliders */
+input[type="range"] {
+  accent-color: var(--vf-accent);
+}
+
+/* Subtle studio scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--vf-border);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--vf-text-subtle);
+}

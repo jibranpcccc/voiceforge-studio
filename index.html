@@ -1,15 +1,27 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0B0D12" />
     <meta
       name="description"
       content="VoiceForge Studio — 100% client-side AI voice cloning and narration studio powered by WebGPU and WebAssembly."
     />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="./icons/icon.svg" />
+    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
     <title>VoiceForge Studio — Local AI Voice Cloning &amp; Narration</title>
+    <script>
+      try {
+        var savedTheme = localStorage.getItem('vf_theme');
+        var theme = savedTheme === 'light' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+      } catch (e) {}
+    </script>
   </head>
-  <body class="bg-slate-950 text-slate-100 antialiased">
+  <body class="bg-[var(--vf-bg)] text-[var(--vf-text)] antialiased">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

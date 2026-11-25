@@ -1,0 +1,298 @@
+import { useState } from 'react';
+import { BookOpen, Edit3, Plus, Trash2, X } from 'lucide-react';
+import {
+  applyPronunciationRules,
+  validatePronunciationRule,
+} from '../../services/pronunciation';
+import type { PronunciationRule } from '../../types';
+
+export interface PronunciationModalProps {
+  open: boolean;
+  onClose: () => void;
+  rules: PronunciationRule[];
+  onSaveRule: (rule: Omit<PronunciationRule, 'id'> & { id?: string }) => Promise<PronunciationRule>;
+  onToggleRule: (id: string) => Promise<void>;
+  onDeleteRule: (id: string) => Promise<void>;
+}
+
+export function PronunciationModal({
+  open,
+  onClose,
+  rules,
+  onSaveRule,
+  onToggleRule,
+  onDeleteRule,
+}: PronunciationModalProps) {
+  const [editingId, setEditingId] = useState<string | undefined>(undefined);
+  const [pattern, setPattern] = useState('');
+  const [replacement, setReplacement] = useState('');
+  const [isRegex, setIsRegex] = useState(false);
+  const [caseSensitive, setCaseSensitive] = useState(false);
+  const [note, setNote] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [testPhrase, setTestPhrase] = useState(
+    'ONNX Runtime and NVIDIA CUDA work with Dr. Chen in v2.1.'
+  );
+
+  if (!open) return null;
+
+  const resetForm = () => {
+    setEditingId(undefined);
+    setPattern('');
+    setReplacement('');
+    setIsRegex(false);
+    setCaseSensitive(false);
+    setNote('');
+    setError(null);
+  };
+
+  const startEdit = (rule: PronunciationRule) => {
+    setEditingId(rule.id);
+    setPattern(rule.pattern);
+    setReplacement(rule.replacement);
+    setIsRegex(rule.isRegex);
+    setCaseSensitive(rule.caseSensitive);
+    setNote(rule.note ?? '');
+    setError(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    const validation = validatePronunciationRule({
+      pattern,
+      replacement,
+      isRegex,
+      caseSensitive,
+    });
+    if (!validation.valid) {
+      setError(validation.error ?? 'Invalid rule.');
+      return;
+    }
+
+    try {
+      await onSaveRule({
+        ...(editingId ? { id: editingId } : {}),
+        pattern,
+        replacement,
+        isRegex,
+        caseSensitive,
+        enabled: true,
+        ...(note.trim() ? { note: note.trim() } : {}),
+      });
+      resetForm();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  const previewOutput = applyPronunciationRules(testPhrase, rules);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121622] shadow-2xl">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-[#7C5CFF]" />
+            <div>
+              <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                Pronunciation Dictionary
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Non-destructive phonetic &amp; acronym substitutions stored locally in IndexedDB.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-5">
+          {/* Add / Edit Rule Form */}
+          <form
+            onSubmit={handleSubmit}
+            className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0B0D12]/60 p-4 space-y-3"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Match Word / Pattern
+                </label>
+                <input
+                  type="text"
+                  value={pattern}
+                  onChange={(e) => setPattern(e.target.value)}
+                  placeholder="e.g. ONNX or \\bv(\\d+)\\.(\\d+)\\b"
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121622] px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-[#7C5CFF] focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Spoken Replacement
+                </label>
+                <input
+                  type="text"
+                  value={replacement}
+                  onChange={(e) => setReplacement(e.target.value)}
+                  placeholder="e.g. on-icks"
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121622] px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-[#7C5CFF] focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-300">
+                <label className="inline-flex items-center gap-1.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isRegex}
+                    onChange={(e) => setIsRegex(e.target.checked)}
+                    className="accent-[#7C5CFF]"
+                  />
+                  Regex
+                </label>
+                <label className="inline-flex items-center gap-1.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={caseSensitive}
+                    onChange={(e) => setCaseSensitive(e.target.checked)}
+                    className="accent-[#7C5CFF]"
+                  />
+                  Case-sensitive
+                </label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {editingId && (
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    className="px-3 py-1.5 rounded-lg text-xs border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300"
+                  >
+                    Cancel Edit
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#7C5CFF] text-white hover:bg-[#6A48F5] transition"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  {editingId ? 'Update Rule' : 'Add Rule'}
+                </button>
+              </div>
+            </div>
+
+            <input
+              type="text"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Optional note (e.g. brand pronunciation)"
+              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#121622] px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-[#7C5CFF] focus:outline-none"
+            />
+
+            {error && <p className="text-xs text-rose-500">{error}</p>}
+          </form>
+
+          {/* Rule List */}
+          <div className="space-y-2">
+            <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Saved Rules ({rules.length})
+            </div>
+            {rules.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-6 text-center text-xs text-slate-500 dark:text-slate-400">
+                No custom pronunciation rules saved yet.
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-200 dark:divide-slate-800 rounded-xl border border-slate-200 dark:border-slate-800">
+                {rules.map((rule) => (
+                  <div
+                    key={rule.id}
+                    className="flex items-center justify-between gap-3 px-3.5 py-2.5 text-xs"
+                  >
+                    <label className="flex items-center gap-2.5 min-w-0 flex-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={rule.enabled}
+                        onChange={() => void onToggleRule(rule.id)}
+                        className="accent-[#7C5CFF]"
+                      />
+                      <div className={`min-w-0 ${rule.enabled ? '' : 'opacity-50 line-through'}`}>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-mono">
+                            {rule.pattern}
+                          </code>
+                          <span className="text-slate-400">&rarr;</span>
+                          <span className="font-medium text-[#7C5CFF]">
+                            {rule.replacement || '(empty)'}
+                          </span>
+                          {rule.isRegex && (
+                            <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 text-[10px]">
+                              regex
+                            </span>
+                          )}
+                          {rule.caseSensitive && (
+                            <span className="px-1.5 py-0.5 rounded bg-slate-500/10 text-slate-400 text-[10px]">
+                              case
+                            </span>
+                          )}
+                        </div>
+                        {rule.note && (
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                            {rule.note}
+                          </div>
+                        )}
+                      </div>
+                    </label>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => startEdit(rule)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+                        title="Edit rule"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void onDeleteRule(rule.id)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition"
+                        title="Delete rule"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Live Test Preview */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3.5 space-y-2">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Live Rule Tester
+            </label>
+            <input
+              type="text"
+              value={testPhrase}
+              onChange={(e) => setTestPhrase(e.target.value)}
+              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B0D12] px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100"
+            />
+            <div className="text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-[#0B0D12]/60 rounded-lg px-3 py-2">
+              <span className="text-[10px] uppercase tracking-wider text-slate-400 block mb-0.5">
+                Normalized Synthesis Input
+              </span>
+              {previewOutput}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

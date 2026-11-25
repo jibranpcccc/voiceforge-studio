@@ -1,57 +1,146 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
-import { AudioWaveform, ShieldCheck } from 'lucide-react';
+import { lazy, Suspense, useCallback, useEffect } from 'react';
+import { ToastContainer } from './components/common';
+import { StudioShell } from './components/layout';
+import { ChatterboxEngine } from './engines/chatterbox';
+import { PocketTtsEngine } from './engines/pocket';
+import { defaultEngineRegistry } from './engines/registry';
+import { AudioLabPage } from './pages/AudioLabPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { ModelManagerPage } from './pages/ModelManagerPage';
+import { MyVoicesPage } from './pages/MyVoicesPage';
+import { ProjectsPage } from './pages/ProjectsPage';
+import { SettingsPage } from './pages/SettingsPage';
+import { StudioPage } from './pages/StudioPage';
+import { VoiceCloningPage } from './pages/VoiceCloningPage';
+import { useAppStore, type AppRoute } from './stores/appStore';
+import { useModelStore } from './stores/modelStore';
 
 const PocHarness = lazy(() => import('./pages/PocHarness'));
 
-function isPocRoute(): boolean {
-  if (typeof window === 'undefined') return false;
-  return window.location.hash === '#/poc' || window.location.hash.startsWith('#/poc?');
+const VALID_ROUTES = new Set<AppRoute>([
+  'dashboard',
+  'clone',
+  'studio',
+  'voices',
+  'projects',
+  'lab',
+  'models',
+  'settings',
+  'poc',
+]);
+
+function parseRouteFromHash(hash: string): AppRoute {
+  const cleaned = hash.replace(/^#\/?/, '').split('?')[0].trim().toLowerCase();
+  if (cleaned === 'audio-lab') return 'lab';
+  if (VALID_ROUTES.has(cleaned as AppRoute)) {
+    return cleaned as AppRoute;
+  }
+  return 'dashboard';
+}
+
+let registeredPocketBaseUrl: string | null = null;
+
+function ensureDefaultEnginesRegistered(customModelBaseUrl: string): void {
+  const normalized = customModelBaseUrl.trim();
+  if (!defaultEngineRegistry.has('pocket-tts') || registeredPocketBaseUrl !== normalized) {
+    defaultEngineRegistry.register(
+      new PocketTtsEngine({
+        customModelBaseUrl: normalized || undefined,
+      }),
+      { replace: true }
+    );
+    registeredPocketBaseUrl = normalized;
+  }
+  if (!defaultEngineRegistry.has('chatterbox')) {
+    defaultEngineRegistry.register(new ChatterboxEngine());
+  }
 }
 
 export function App() {
-  const [pocMode, setPocMode] = useState<boolean>(isPocRoute);
+  const activeRoute = useAppStore((s) => s.activeRoute);
+  const setActiveRoute = useAppStore((s) => s.setActiveRoute);
+  const customModelBaseUrl = useAppStore((s) => s.customModelBaseUrl);
+  const detectHardware = useAppStore((s) => s.detectHardware);
+  const loadManifest = useModelStore((s) => s.loadManifest);
 
-  useEffect(() => {
-    const onHashChange = () => setPocMode(isPocRoute());
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
-  }, []);
-
-  if (pocMode) {
-    return (
-      <Suspense
-        fallback={
-          <div className="min-h-screen bg-slate-950 text-slate-300 flex items-center justify-center font-mono text-sm">
-            Loading PoC Harness...
-          </div>
+  const navigate = useCallback(
+    (route: AppRoute) => {
+      setActiveRoute(route);
+      if (typeof window !== 'undefined') {
+        const currentParsed = parseRouteFromHash(window.location.hash);
+        if (currentParsed !== route || !window.location.hash) {
+          window.location.hash = `#/${route}`;
         }
-      >
-        <PocHarness />
-      </Suspense>
+      }
+    },
+    [setActiveRoute]
+  );
+
+  // Sync initial hash & hashchange events -> appStore
+  useEffect(() => {
+    const syncFromHash = () => {
+      const nextRoute = parseRouteFromHash(window.location.hash);
+      if (useAppStore.getState().activeRoute !== nextRoute) {
+        setActiveRoute(nextRoute);
+      }
+    };
+
+    if (!window.location.hash) {
+      window.location.hash = '#/dashboard';
+    }
+    syncFromHash();
+
+    window.addEventListener('hashchange', syncFromHash);
+    return () => window.removeEventListener('hashchange', syncFromHash);
+  }, [setActiveRoute]);
+
+  // Sync programmatic setActiveRoute() calls -> window.location.hash
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const currentFromHash = parseRouteFromHash(window.location.hash);
+    if (currentFromHash !== activeRoute) {
+      window.location.hash = `#/${activeRoute}`;
+    }
+  }, [activeRoute]);
+
+  // Bootstrap default engine registry, hardware probe, and model manifest
+  useEffect(() => {
+    ensureDefaultEnginesRegistered(customModelBaseUrl);
+    void detectHardware().catch(() => undefined);
+    void loadManifest().catch(() => undefined);
+  }, [customModelBaseUrl, detectHardware, loadManifest]);
+
+  if (activeRoute === 'poc') {
+    return (
+      <>
+        <Suspense
+          fallback={
+            <div className="min-h-screen bg-[var(--vf-bg)] text-[var(--vf-text-muted)] flex items-center justify-center font-mono text-sm">
+              Loading PoC Harness...
+            </div>
+          }
+        >
+          <PocHarness />
+        </Suspense>
+        <ToastContainer />
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
-      <main className="max-w-xl w-full rounded-2xl border border-slate-800 bg-slate-900/70 p-8 shadow-2xl">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="h-10 w-10 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300">
-            <AudioWaveform className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight">VoiceForge Studio</h1>
-            <p className="text-sm text-slate-400">100% Client-Side AI Voice Cloning &amp; Narration</p>
-          </div>
-        </div>
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 flex items-start gap-3 text-sm text-emerald-200">
-          <ShieldCheck className="h-5 w-5 shrink-0 text-emerald-400 mt-0.5" />
-          <p>
-            Local-first studio scaffold initialized. All inference, audio mastering, and exports run
-            exclusively in your browser with zero external uploads.
-          </p>
-        </div>
-      </main>
-    </div>
+    <>
+      <StudioShell activeRoute={activeRoute} onNavigate={navigate}>
+        {activeRoute === 'dashboard' && <DashboardPage />}
+        {activeRoute === 'clone' && <VoiceCloningPage />}
+        {activeRoute === 'studio' && <StudioPage />}
+        {activeRoute === 'voices' && <MyVoicesPage />}
+        {activeRoute === 'projects' && <ProjectsPage />}
+        {activeRoute === 'lab' && <AudioLabPage />}
+        {activeRoute === 'models' && <ModelManagerPage />}
+        {activeRoute === 'settings' && <SettingsPage />}
+      </StudioShell>
+      <ToastContainer />
+    </>
   );
 }
 
