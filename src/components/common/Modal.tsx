@@ -44,7 +44,7 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs"
       role="dialog"
       aria-modal="true"
       aria-labelledby="vf-modal-title"
@@ -55,11 +55,11 @@ export function Modal({
       }}
     >
       <div
-        className={`w-full ${SIZE_CLASSES[size]} rounded-2xl border border-[var(--vf-border)] bg-[var(--vf-surface)] text-[var(--vf-text)] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]`}
+        className={`w-full ${SIZE_CLASSES[size]} rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] text-[var(--vf-text)] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]`}
       >
-        <div className="flex items-start justify-between gap-4 px-5 py-4 border-b border-[var(--vf-border-subtle)]">
+        <div className="flex items-start justify-between gap-4 px-5 py-3.5 border-b border-[var(--vf-border-subtle)] bg-[var(--vf-surface-elevated)]">
           <div>
-            <h2 id="vf-modal-title" className="text-base font-semibold tracking-tight">
+            <h2 id="vf-modal-title" className="text-sm font-semibold tracking-tight">
               {title}
             </h2>
             {description && (
@@ -69,7 +69,7 @@ export function Modal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:bg-[var(--vf-surface-muted)] transition-colors cursor-pointer"
+            className="rounded-md p-1 text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:bg-[var(--vf-surface-muted)] transition-colors cursor-pointer"
             aria-label="Close modal"
           >
             <X className="h-4 w-4" />
@@ -79,7 +79,7 @@ export function Modal({
         <div className="px-5 py-4 overflow-y-auto flex-1 text-sm">{children}</div>
 
         {footer && (
-          <div className="px-5 py-3.5 border-t border-[var(--vf-border-subtle)] bg-[var(--vf-surface-elevated)] flex items-center justify-end gap-2.5">
+          <div className="px-5 py-3 border-t border-[var(--vf-border-subtle)] bg-[var(--vf-surface-elevated)] flex items-center justify-end gap-2">
             {footer}
           </div>
         )}

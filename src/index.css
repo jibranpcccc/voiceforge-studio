@@ -4,41 +4,41 @@
 
 :root,
 [data-theme="light"] {
-  --vf-bg: #f4f6fb;
-  --vf-surface: #ffffff;
-  --vf-surface-elevated: #f8f9fd;
-  --vf-surface-muted: #eef1f7;
-  --vf-border: #dce1ee;
-  --vf-border-subtle: #e7ebf5;
-  --vf-text: #0f1422;
-  --vf-text-muted: #525d78;
-  --vf-text-subtle: #78839e;
-  --vf-accent: #6d4aff;
-  --vf-accent-hover: #5b36f5;
-  --vf-accent-soft: rgba(109, 74, 255, 0.12);
-  --vf-success: #059669;
-  --vf-warning: #d97706;
-  --vf-danger: #dc2626;
+  --vf-bg: #F4F2EC;
+  --vf-surface: #FAF9F5;
+  --vf-surface-elevated: #EFECE4;
+  --vf-surface-muted: #E6E2D8;
+  --vf-border: #D5D0C4;
+  --vf-border-subtle: #E4E0D6;
+  --vf-text: #161513;
+  --vf-text-muted: #5C584F;
+  --vf-text-subtle: #847F74;
+  --vf-accent: #C94514;
+  --vf-accent-hover: #B03A0E;
+  --vf-accent-soft: rgba(201, 69, 20, 0.10);
+  --vf-success: #1F7A4D;
+  --vf-warning: #B57814;
+  --vf-danger: #B83232;
   color-scheme: light;
 }
 
 .dark,
 [data-theme="dark"] {
-  --vf-bg: #0b0d12;
-  --vf-surface: #121622;
-  --vf-surface-elevated: #171c2b;
-  --vf-surface-muted: #1b2234;
-  --vf-border: #252c40;
-  --vf-border-subtle: #1d2334;
-  --vf-text: #eef1f8;
-  --vf-text-muted: #98a2bd;
-  --vf-text-subtle: #6e7894;
-  --vf-accent: #7c5cff;
-  --vf-accent-hover: #8f74ff;
-  --vf-accent-soft: rgba(124, 92, 255, 0.16);
-  --vf-success: #34d399;
-  --vf-warning: #fbbf24;
-  --vf-danger: #f87171;
+  --vf-bg: #111110;
+  --vf-surface: #181816;
+  --vf-surface-elevated: #20201D;
+  --vf-surface-muted: #282724;
+  --vf-border: #2E2D29;
+  --vf-border-subtle: #23221F;
+  --vf-text: #F2EFE9;
+  --vf-text-muted: #9C988E;
+  --vf-text-subtle: #6E6B63;
+  --vf-accent: #E25822;
+  --vf-accent-hover: #F06832;
+  --vf-accent-soft: rgba(226, 88, 34, 0.12);
+  --vf-success: #2EA067;
+  --vf-warning: #D99B26;
+  --vf-danger: #D94848;
   color-scheme: dark;
 }
 
@@ -51,21 +51,88 @@ body,
 body {
   background-color: var(--vf-bg);
   color: var(--vf-text);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
-/* Custom sleek range inputs for studio sliders */
+.font-mono,
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+}
+
+/* Precision hairline range sliders for studio faders */
 input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
   accent-color: var(--vf-accent);
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 3px;
+  background: var(--vf-border);
+  border-radius: 9999px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 14px;
+  margin-top: -5.5px;
+  border-radius: 3px;
+  background: var(--vf-accent);
+  border: 1px solid var(--vf-surface);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  transition: background-color 120ms ease, transform 120ms ease;
+}
+
+input[type="range"]:hover::-webkit-slider-thumb {
+  background: var(--vf-accent-hover);
+}
+
+input[type="range"]:focus-visible {
+  outline: none;
+}
+
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--vf-accent);
+  outline-offset: 2px;
+}
+
+input[type="range"]::-moz-range-track {
+  height: 3px;
+  background: var(--vf-border);
+  border-radius: 9999px;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 10px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--vf-accent);
+  border: 1px solid var(--vf-surface);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  transition: background-color 120ms ease;
+}
+
+input[type="range"]:hover::-moz-range-thumb {
+  background: var(--vf-accent-hover);
 }
 
 /* Subtle studio scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -74,7 +141,7 @@ input[type="range"] {
 
 ::-webkit-scrollbar-thumb {
   background: var(--vf-border);
-  border-radius: 9999px;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {

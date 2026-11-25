@@ -1,15 +1,15 @@
 import { useEffect } from 'react';
 import {
   ArrowRight,
+  AudioLines,
   Boxes,
   CheckCircle2,
-  Cpu,
-  FlaskConical,
   FolderKanban,
   HardDrive,
   Mic,
+  Radio,
   RefreshCw,
-  Sparkles,
+  SlidersHorizontal,
   TriangleAlert,
   Users,
   XCircle,
@@ -84,134 +84,162 @@ export function DashboardPage() {
   const recentProjects = projects.slice(0, 5);
 
   return (
-    <div className="space-y-6">
-      {/* Quick Studio Launch */}
-      <section className="rounded-2xl border border-[var(--vf-border)] bg-[var(--vf-surface)] p-5 sm:p-6">
+    <div className="space-y-5">
+      {/* Studio Command Header */}
+      <section className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--vf-accent)]/30 bg-[var(--vf-accent-soft)] px-3 py-1 text-xs font-medium text-[var(--vf-accent)] mb-2.5">
-              <Cpu className="h-3.5 w-3.5" />
-              <span>Execution Mode: {executionMode.toUpperCase()}</span>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.12em] text-[var(--vf-text-subtle)] mb-1.5">
+              <Radio className="h-3 w-3 text-[var(--vf-accent)] shrink-0" />
+              <span>Mastering Desk</span>
+              <span aria-hidden="true">/</span>
+              <span className="text-[var(--vf-text-muted)]">
+                Mode: {executionMode.toUpperCase()}
+              </span>
             </div>
-            <h2 className="text-lg sm:text-xl font-semibold tracking-tight">
+            <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-[var(--vf-text)]">
               Local Browser Voice Cloning &amp; Narration Workspace
             </h2>
             <p className="text-xs sm:text-sm text-[var(--vf-text-muted)] mt-1 max-w-2xl">
-              Clone reference voices, manage local voice profiles, and generate long-form narration
+              Clone reference voices, manage local voice profiles, and master long-form narration
               completely inside your browser using ONNX Runtime Web (WebGPU &amp; WASM).
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={() => navigate('clone')}
-              className="inline-flex items-center gap-2 rounded-xl bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] text-white px-4 py-2.5 text-xs font-semibold transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-md bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] text-white px-3.5 py-2 text-xs font-semibold transition-colors cursor-pointer"
             >
-              <Mic className="h-4 w-4" />
+              <Mic className="h-3.5 w-3.5" />
               <span>Clone a Voice</span>
             </button>
             <button
               type="button"
               onClick={() => navigate('studio')}
-              className="inline-flex items-center gap-2 rounded-xl border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] hover:border-[var(--vf-accent)]/50 px-4 py-2.5 text-xs font-semibold transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] hover:border-[var(--vf-accent)]/50 px-3.5 py-2 text-xs font-semibold text-[var(--vf-text)] transition-colors cursor-pointer"
             >
-              <Sparkles className="h-4 w-4 text-[var(--vf-accent)]" />
+              <AudioLines className="h-3.5 w-3.5 text-[var(--vf-accent)]" />
               <span>Open Studio</span>
             </button>
             <button
               type="button"
               onClick={() => navigate('models')}
-              className="inline-flex items-center gap-2 rounded-xl border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] hover:border-[var(--vf-accent)]/50 px-4 py-2.5 text-xs font-semibold transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] hover:border-[var(--vf-accent)]/50 px-3.5 py-2 text-xs font-semibold text-[var(--vf-text)] transition-colors cursor-pointer"
             >
-              <Boxes className="h-4 w-4 text-[var(--vf-accent)]" />
+              <Boxes className="h-3.5 w-3.5 text-[var(--vf-accent)]" />
               <span>Model Manager</span>
             </button>
           </div>
         </div>
       </section>
 
-      {/* Real Workspace Summary Cards */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="rounded-2xl border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4">
-          <div className="flex items-center justify-between text-xs text-[var(--vf-text-muted)]">
-            <span>Offline-Ready Models</span>
-            <Boxes className="h-4 w-4 text-[var(--vf-accent)]" />
+      {/* Unified Hairline-Divided Horizontal Telemetry Strip */}
+      <section className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] overflow-hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-[var(--vf-border-subtle)]">
+          <div className="p-4 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.06em] text-[var(--vf-text-muted)]">
+                <span>Offline-Ready Models</span>
+                <Boxes className="h-3.5 w-3.5 text-[var(--vf-accent)]" />
+              </div>
+              <div className="mt-2 flex items-baseline justify-between gap-2">
+                <span className="text-2xl font-semibold font-mono tabular-nums text-[var(--vf-text)]">
+                  {offlineReadyModels.length} / {modelEntries.length}
+                </span>
+                <span className="text-[11px] font-mono tabular-nums text-[var(--vf-text-subtle)]">
+                  {formatBytes(totalCachedBytes)}
+                </span>
+              </div>
+            </div>
+            {offlineReadyModels.length < modelEntries.length ? (
+              <button
+                type="button"
+                onClick={() => navigate('models')}
+                className="mt-3 self-start inline-flex items-center gap-1.5 rounded-md bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] text-white px-2.5 py-1 text-xs font-semibold transition-colors cursor-pointer"
+              >
+                <span>Download Models</span>
+                <ArrowRight className="h-3 w-3" />
+              </button>
+            ) : (
+              <p className="mt-3 text-[11px] font-mono text-[var(--vf-success)]">
+                All manifest weights cached
+              </p>
+            )}
           </div>
-          <div className="mt-2 text-2xl font-semibold font-mono">
-            {offlineReadyModels.length} / {modelEntries.length}
-          </div>
-          <p className="text-xs text-[var(--vf-text-muted)] mt-1">
-            {formatBytes(totalCachedBytes)} cached locally
-          </p>
-          {offlineReadyModels.length < modelEntries.length && (
+
+          <div className="p-4 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.06em] text-[var(--vf-text-muted)]">
+                <span>Saved Voice Profiles</span>
+                <Users className="h-3.5 w-3.5 text-[var(--vf-accent)]" />
+              </div>
+              <div className="mt-2 text-2xl font-semibold font-mono tabular-nums text-[var(--vf-text)]">
+                {voices.length}
+              </div>
+            </div>
             <button
               type="button"
-              onClick={() => navigate('models')}
-              className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] text-white px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer"
+              onClick={() => navigate('voices')}
+              className="mt-3 self-start text-xs font-medium text-[var(--vf-accent)] hover:underline inline-flex items-center gap-1 cursor-pointer"
             >
-              <span>Download Models</span>
-              <ArrowRight className="h-3.5 w-3.5" />
+              <span>Browse My Voices</span>
+              <ArrowRight className="h-3 w-3" />
             </button>
-          )}
-        </div>
-
-        <div className="rounded-2xl border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4">
-          <div className="flex items-center justify-between text-xs text-[var(--vf-text-muted)]">
-            <span>Saved Voice Profiles</span>
-            <Users className="h-4 w-4 text-[var(--vf-accent)]" />
           </div>
-          <div className="mt-2 text-2xl font-semibold font-mono">{voices.length}</div>
-          <button
-            type="button"
-            onClick={() => navigate('voices')}
-            className="text-xs text-[var(--vf-accent)] hover:underline mt-1 inline-flex items-center gap-1 cursor-pointer"
-          >
-            <span>Browse My Voices</span>
-            <ArrowRight className="h-3 w-3" />
-          </button>
-        </div>
 
-        <div className="rounded-2xl border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4">
-          <div className="flex items-center justify-between text-xs text-[var(--vf-text-muted)]">
-            <span>Saved Projects</span>
-            <FolderKanban className="h-4 w-4 text-[var(--vf-accent)]" />
+          <div className="p-4 flex flex-col justify-between sm:border-t xl:border-t-0 border-[var(--vf-border-subtle)]">
+            <div>
+              <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.06em] text-[var(--vf-text-muted)]">
+                <span>Saved Projects</span>
+                <FolderKanban className="h-3.5 w-3.5 text-[var(--vf-accent)]" />
+              </div>
+              <div className="mt-2 text-2xl font-semibold font-mono tabular-nums text-[var(--vf-text)]">
+                {projects.length}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('projects')}
+              className="mt-3 self-start text-xs font-medium text-[var(--vf-accent)] hover:underline inline-flex items-center gap-1 cursor-pointer"
+            >
+              <span>View All Projects</span>
+              <ArrowRight className="h-3 w-3" />
+            </button>
           </div>
-          <div className="mt-2 text-2xl font-semibold font-mono">{projects.length}</div>
-          <button
-            type="button"
-            onClick={() => navigate('projects')}
-            className="text-xs text-[var(--vf-accent)] hover:underline mt-1 inline-flex items-center gap-1 cursor-pointer"
-          >
-            <span>View All Projects</span>
-            <ArrowRight className="h-3 w-3" />
-          </button>
-        </div>
 
-        <div className="rounded-2xl border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4">
-          <div className="flex items-center justify-between text-xs text-[var(--vf-text-muted)]">
-            <span>Audio Comparison Lab</span>
-            <FlaskConical className="h-4 w-4 text-[var(--vf-accent)]" />
+          <div className="p-4 flex flex-col justify-between sm:border-t xl:border-t-0 border-[var(--vf-border-subtle)]">
+            <div>
+              <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.06em] text-[var(--vf-text-muted)]">
+                <span>Audio Comparison Lab</span>
+                <SlidersHorizontal className="h-3.5 w-3.5 text-[var(--vf-accent)]" />
+              </div>
+              <div className="mt-2 text-sm font-semibold text-[var(--vf-text)]">
+                Real A/B Telemetry
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('lab')}
+              className="mt-3 self-start text-xs font-medium text-[var(--vf-accent)] hover:underline inline-flex items-center gap-1 cursor-pointer"
+            >
+              <span>Launch Audio Lab</span>
+              <ArrowRight className="h-3 w-3" />
+            </button>
           </div>
-          <div className="mt-2 text-sm font-semibold">Real A/B Telemetry</div>
-          <button
-            type="button"
-            onClick={() => navigate('lab')}
-            className="text-xs text-[var(--vf-accent)] hover:underline mt-2 inline-flex items-center gap-1 cursor-pointer"
-          >
-            <span>Launch Audio Lab</span>
-            <ArrowRight className="h-3 w-3" />
-          </button>
         </div>
       </section>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Hardware Capability Summary */}
-        <section className="xl:col-span-2 rounded-2xl border border-[var(--vf-border)] bg-[var(--vf-surface)] p-5 space-y-4">
-          <div className="flex items-center justify-between gap-3">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+        {/* Hardware Capability Spec Sheet */}
+        <section className="xl:col-span-2 rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-5 space-y-4">
+          <div className="flex items-center justify-between gap-3 pb-3 border-b border-[var(--vf-border-subtle)]">
             <div>
-              <h3 className="text-sm font-semibold">Hardware &amp; Browser Runtime Probe</h3>
-              <p className="text-xs text-[var(--vf-text-muted)]">
+              <h3 className="text-sm font-semibold text-[var(--vf-text)]">
+                Hardware &amp; Browser Runtime Probe
+              </h3>
+              <p className="text-xs text-[var(--vf-text-muted)] mt-0.5">
                 Live capabilities reported directly by browser APIs (no estimated or fabricated metrics).
               </p>
             </div>
@@ -219,7 +247,7 @@ export function DashboardPage() {
               type="button"
               onClick={() => void detectHardware().catch(() => undefined)}
               disabled={hardwareLoading}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-3 py-1.5 text-xs font-medium hover:border-[var(--vf-accent)]/40 transition-colors cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-3 py-1.5 text-xs font-medium hover:border-[var(--vf-accent)]/50 transition-colors cursor-pointer disabled:opacity-50 shrink-0"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${hardwareLoading ? 'animate-spin' : ''}`} />
               <span>Re-probe</span>
@@ -227,17 +255,19 @@ export function DashboardPage() {
           </div>
 
           {hardwareError && (
-            <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">
+            <div className="rounded-md border border-[var(--vf-danger)]/40 bg-[var(--vf-danger)]/10 p-3 text-xs text-[var(--vf-danger)]">
               Hardware probe failed: {hardwareError}
             </div>
           )}
 
           {hardwareCapabilities ? (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
-                <div className="rounded-xl border border-[var(--vf-border-subtle)] bg-[var(--vf-surface-elevated)] p-3">
-                  <div className="text-[var(--vf-text-muted)]">WebGPU Adapter</div>
-                  <div className="mt-1 font-medium">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 text-xs">
+                <div className="rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] p-3">
+                  <div className="text-[10px] font-mono uppercase tracking-[0.06em] text-[var(--vf-text-subtle)]">
+                    WebGPU Adapter
+                  </div>
+                  <div className="mt-1 font-medium text-[var(--vf-text)]">
                     {hardwareCapabilities.webgpuAdapterAvailable
                       ? hardwareCapabilities.webgpuAdapterInfo?.description ||
                         hardwareCapabilities.webgpuAdapterInfo?.device ||
@@ -249,46 +279,54 @@ export function DashboardPage() {
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-[var(--vf-border-subtle)] bg-[var(--vf-surface-elevated)] p-3">
-                  <div className="text-[var(--vf-text-muted)]">WebGPU shader-f16</div>
-                  <div className="mt-1 font-medium">
+                <div className="rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] p-3">
+                  <div className="text-[10px] font-mono uppercase tracking-[0.06em] text-[var(--vf-text-subtle)]">
+                    WebGPU shader-f16
+                  </div>
+                  <div className="mt-1 font-medium font-mono text-[var(--vf-text)]">
                     {hardwareCapabilities.shaderF16Supported ? 'Supported' : 'Not supported'}
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-[var(--vf-border-subtle)] bg-[var(--vf-surface-elevated)] p-3">
-                  <div className="text-[var(--vf-text-muted)]">WebGPU Max Buffer</div>
-                  <div className="mt-1 font-medium font-mono">
+                <div className="rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] p-3">
+                  <div className="text-[10px] font-mono uppercase tracking-[0.06em] text-[var(--vf-text-subtle)]">
+                    WebGPU Max Buffer
+                  </div>
+                  <div className="mt-1 font-medium font-mono tabular-nums text-[var(--vf-text)]">
                     {formatBytes(hardwareCapabilities.webgpuMaxBufferSize)}
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-[var(--vf-border-subtle)] bg-[var(--vf-surface-elevated)] p-3">
-                  <div className="text-[var(--vf-text-muted)]">WASM SIMD &amp; Threads</div>
-                  <div className="mt-1 font-medium">
-                    {hardwareCapabilities.wasmSimdSupported ? 'SIMD Ready' : 'No SIMD'} •{' '}
+                <div className="rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] p-3">
+                  <div className="text-[10px] font-mono uppercase tracking-[0.06em] text-[var(--vf-text-subtle)]">
+                    WASM SIMD &amp; Threads
+                  </div>
+                  <div className="mt-1 font-medium font-mono tabular-nums text-[var(--vf-text)]">
+                    {hardwareCapabilities.wasmSimdSupported ? 'SIMD Ready' : 'No SIMD'} ·{' '}
                     {hardwareCapabilities.wasmThreadsSupported
                       ? `${hardwareCapabilities.recommendedWasmThreads} threads`
                       : '1 thread (no COOP/COEP)'}
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-[var(--vf-border-subtle)] bg-[var(--vf-surface-elevated)] p-3">
-                  <div className="text-[var(--vf-text-muted)]">CPU Cores &amp; Device RAM</div>
-                  <div className="mt-1 font-medium font-mono">
-                    {hardwareCapabilities.hardwareConcurrency} cores •{' '}
+                <div className="rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] p-3">
+                  <div className="text-[10px] font-mono uppercase tracking-[0.06em] text-[var(--vf-text-subtle)]">
+                    CPU Cores &amp; Device RAM
+                  </div>
+                  <div className="mt-1 font-medium font-mono tabular-nums text-[var(--vf-text)]">
+                    {hardwareCapabilities.hardwareConcurrency} cores ·{' '}
                     {hardwareCapabilities.deviceMemoryGb !== null
                       ? `${hardwareCapabilities.deviceMemoryGb} GB`
                       : 'RAM not exposed'}
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-[var(--vf-border-subtle)] bg-[var(--vf-surface-elevated)] p-3">
-                  <div className="text-[var(--vf-text-muted)] flex items-center gap-1">
+                <div className="rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] p-3">
+                  <div className="text-[10px] font-mono uppercase tracking-[0.06em] text-[var(--vf-text-subtle)] flex items-center gap-1">
                     <HardDrive className="h-3 w-3" />
                     <span>Origin Storage</span>
                   </div>
-                  <div className="mt-1 font-medium font-mono">
+                  <div className="mt-1 font-medium font-mono tabular-nums text-[var(--vf-text)]">
                     {hardwareCapabilities.storageQuotaBytes !== null
                       ? `${formatBytes(hardwareCapabilities.storageUsageBytes)} / ${formatBytes(
                           hardwareCapabilities.storageQuotaBytes
@@ -300,7 +338,7 @@ export function DashboardPage() {
 
               {/* Per-Engine Compatibility */}
               {Object.values(hardwareReport).length > 0 && (
-                <div className="space-y-2">
+                <div className="space-y-2.5 pt-1">
                   <div className="text-xs font-medium text-[var(--vf-text-muted)]">
                     Engine Compatibility Assessment (Recommended Mode:{' '}
                     <span className="text-[var(--vf-text)] uppercase font-mono">
@@ -308,19 +346,21 @@ export function DashboardPage() {
                     </span>
                     )
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                     {Object.values(hardwareReport).map((rep) => (
                       <div
                         key={rep.engineId}
-                        className="rounded-xl border border-[var(--vf-border-subtle)] bg-[var(--vf-surface-elevated)] p-3 text-xs space-y-1.5"
+                        className="rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] p-3 text-xs space-y-1.5"
                       >
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold font-mono">{rep.engineId}</span>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-semibold font-mono text-[var(--vf-text)]">
+                            {rep.engineId}
+                          </span>
                           <span
-                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                            className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-mono uppercase ${
                               rep.compatible
-                                ? 'bg-emerald-500/15 text-emerald-400'
-                                : 'bg-rose-500/15 text-rose-400'
+                                ? 'border-[var(--vf-success)]/30 bg-[var(--vf-success)]/10 text-[var(--vf-success)]'
+                                : 'border-[var(--vf-danger)]/30 bg-[var(--vf-danger)]/10 text-[var(--vf-danger)]'
                             }`}
                           >
                             {rep.compatible ? (
@@ -334,14 +374,14 @@ export function DashboardPage() {
                           </span>
                         </div>
                         {rep.blockers.map((b, i) => (
-                          <p key={i} className="text-rose-400 flex items-start gap-1.5">
+                          <p key={i} className="text-[var(--vf-danger)] flex items-start gap-1.5">
                             <XCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
                             <span>{b}</span>
                           </p>
                         ))}
                         {rep.warnings.slice(0, 2).map((w, i) => (
                           <p key={i} className="text-[var(--vf-text-muted)] flex items-start gap-1.5">
-                            <TriangleAlert className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />
+                            <TriangleAlert className="h-3.5 w-3.5 text-[var(--vf-warning)] shrink-0 mt-0.5" />
                             <span>{w}</span>
                           </p>
                         ))}
@@ -352,21 +392,21 @@ export function DashboardPage() {
               )}
             </>
           ) : (
-            <div className="text-xs text-[var(--vf-text-muted)] py-6 text-center">
+            <div className="text-xs font-mono text-[var(--vf-text-muted)] py-6 text-center">
               Probing browser hardware capabilities...
             </div>
           )}
         </section>
 
-        {/* Installed Models + Recent Projects */}
-        <div className="space-y-6">
-          <section className="rounded-2xl border border-[var(--vf-border)] bg-[var(--vf-surface)] p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold">Pinned Model Cache</h3>
+        {/* Pinned Model Cache + Recent Projects */}
+        <div className="space-y-5">
+          <section className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4 space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-[var(--vf-border-subtle)]">
+              <h3 className="text-sm font-semibold text-[var(--vf-text)]">Pinned Model Cache</h3>
               <button
                 type="button"
                 onClick={() => navigate('models')}
-                className="text-xs text-[var(--vf-accent)] hover:underline cursor-pointer"
+                className="text-xs font-medium text-[var(--vf-accent)] hover:underline cursor-pointer"
               >
                 Manage
               </button>
@@ -375,25 +415,27 @@ export function DashboardPage() {
             {modelEntries.length === 0 ? (
               <p className="text-xs text-[var(--vf-text-muted)]">Loading pinned manifest...</p>
             ) : (
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {modelEntries.map((m) => (
                   <div
                     key={m.entry.engineId}
-                    className="rounded-xl border border-[var(--vf-border-subtle)] bg-[var(--vf-surface-elevated)] p-3 text-xs"
+                    className="rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] p-2.5 text-xs"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-medium truncate">{m.entry.displayName}</span>
+                      <span className="font-medium truncate text-[var(--vf-text)]">
+                        {m.entry.displayName}
+                      </span>
                       <span
-                        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                        className={`shrink-0 rounded-md border px-1.5 py-0.5 text-[10px] font-mono uppercase ${
                           m.offlineReady
-                            ? 'bg-emerald-500/15 text-emerald-400'
-                            : 'bg-[var(--vf-surface-muted)] text-[var(--vf-text-muted)]'
+                            ? 'border-[var(--vf-success)]/30 bg-[var(--vf-success)]/10 text-[var(--vf-success)]'
+                            : 'border-[var(--vf-border)] bg-[var(--vf-surface)] text-[var(--vf-text-subtle)]'
                         }`}
                       >
                         {m.offlineReady ? 'Offline Ready' : 'Not Cached'}
                       </span>
                     </div>
-                    <div className="mt-1 flex items-center justify-between text-[11px] text-[var(--vf-text-muted)] font-mono">
+                    <div className="mt-1 flex items-center justify-between text-[11px] text-[var(--vf-text-muted)] font-mono tabular-nums">
                       <span>{formatBytes(m.cachedSizeBytes)} cached</span>
                       <span>{formatBytes(m.entry.totalSizeBytes)} total</span>
                     </div>
@@ -403,13 +445,13 @@ export function DashboardPage() {
             )}
           </section>
 
-          <section className="rounded-2xl border border-[var(--vf-border)] bg-[var(--vf-surface)] p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold">Recent Projects</h3>
+          <section className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4 space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-[var(--vf-border-subtle)]">
+              <h3 className="text-sm font-semibold text-[var(--vf-text)]">Recent Projects</h3>
               <button
                 type="button"
                 onClick={() => navigate('projects')}
-                className="text-xs text-[var(--vf-accent)] hover:underline cursor-pointer"
+                className="text-xs font-medium text-[var(--vf-accent)] hover:underline cursor-pointer"
               >
                 All ({projects.length})
               </button>
@@ -423,7 +465,7 @@ export function DashboardPage() {
                   <button
                     type="button"
                     onClick={() => navigate('studio')}
-                    className="rounded-lg bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] text-white px-3 py-1.5 text-xs font-medium cursor-pointer"
+                    className="rounded-md bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] text-white px-3 py-1.5 text-xs font-medium cursor-pointer"
                   >
                     Open Studio
                   </button>
@@ -438,17 +480,21 @@ export function DashboardPage() {
                       key={project.id}
                       type="button"
                       onClick={() => void openProjectInStudio(project)}
-                      className="w-full text-left rounded-xl border border-[var(--vf-border-subtle)] bg-[var(--vf-surface-elevated)] hover:border-[var(--vf-accent)]/40 p-3 transition-colors cursor-pointer"
+                      className="w-full text-left rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)] hover:border-[var(--vf-accent)]/50 p-2.5 transition-colors cursor-pointer"
                     >
                       <div className="flex items-center justify-between gap-2 text-xs">
-                        <span className="font-medium truncate">{project.name}</span>
-                        <span className="font-mono text-[11px] text-[var(--vf-text-muted)] shrink-0">
+                        <span className="font-medium truncate text-[var(--vf-text)]">
+                          {project.name}
+                        </span>
+                        <span className="font-mono tabular-nums text-[11px] text-[var(--vf-text-muted)] shrink-0">
                           {completed}/{project.chunks.length} chunks
                         </span>
                       </div>
                       <div className="mt-1 flex items-center justify-between text-[11px] text-[var(--vf-text-subtle)]">
                         <span className="font-mono">{project.engineId}</span>
-                        <span>{new Date(project.updatedAt).toLocaleDateString()}</span>
+                        <span className="font-mono tabular-nums">
+                          {new Date(project.updatedAt).toLocaleDateString()}
+                        </span>
                       </div>
                     </button>
                   );

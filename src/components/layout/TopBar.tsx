@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Cpu, Menu, Moon, Sun, Wifi, WifiOff } from 'lucide-react';
+import { Menu, Moon, SlidersHorizontal, Sun } from 'lucide-react';
 import { useAppStore, type AppRoute } from '../../stores/appStore';
 import { SyntheticBadge } from './SyntheticBadge';
 
@@ -47,28 +47,26 @@ export function TopBar({ activeRoute, onOpenMobileMenu, onNavigate }: TopBarProp
   }, []);
 
   const meta = ROUTE_META[activeRoute] ?? { title: 'VoiceForge Studio', subtitle: '' };
-  const title = meta.title;
-  const subtitle = meta.subtitle;
 
   return (
-    <header className="sticky top-0 z-30 h-14 border-b border-[var(--vf-border)] bg-[var(--vf-surface)]/90 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between gap-3">
+    <header className="sticky top-0 z-30 h-12 border-b border-[var(--vf-border)] bg-[var(--vf-surface)]/95 backdrop-blur-sm px-4 sm:px-6 flex items-center justify-between gap-3">
       <div className="flex items-center gap-3 min-w-0">
         <button
           type="button"
           onClick={onOpenMobileMenu}
-          className="lg:hidden rounded-lg p-2 text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:bg-[var(--vf-surface-muted)] cursor-pointer"
+          className="lg:hidden rounded-md p-1.5 text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:bg-[var(--vf-surface-muted)] cursor-pointer"
           aria-label="Open navigation menu"
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-4 w-4" />
         </button>
 
-        <div className="min-w-0">
-          <h1 className="text-sm sm:text-base font-semibold tracking-tight truncate">
-            {title}
+        <div className="flex items-baseline gap-2.5 min-w-0">
+          <h1 className="text-sm font-semibold tracking-tight truncate">
+            {meta.title}
           </h1>
-          {subtitle && (
-            <p className="hidden sm:block text-[11px] text-[var(--vf-text-muted)] truncate">
-              {subtitle}
+          {meta.subtitle && (
+            <p className="hidden sm:block text-[11px] text-[var(--vf-text-subtle)] truncate border-l border-[var(--vf-border)] pl-2.5">
+              {meta.subtitle}
             </p>
           )}
         </div>
@@ -80,28 +78,29 @@ export function TopBar({ activeRoute, onOpenMobileMenu, onNavigate }: TopBarProp
         </div>
 
         <span
-          className={`hidden sm:inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium ${
-            isOnline
-              ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-400'
-              : 'border-amber-500/30 bg-amber-500/10 text-amber-400'
-          }`}
+          className="hidden sm:inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-2 py-1 text-[11px] font-mono text-[var(--vf-text-muted)]"
           title={
             isOnline
               ? 'Browser reports network connectivity'
               : 'Browser is offline — cached models and local app shell remain active'
           }
         >
-          {isOnline ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
+          <span
+            aria-hidden="true"
+            className={`h-1.5 w-1.5 rounded-full ${
+              isOnline ? 'bg-[var(--vf-success)]' : 'bg-[var(--vf-warning)]'
+            }`}
+          />
           <span>{isOnline ? 'Online' : 'Offline Mode'}</span>
         </span>
 
         <button
           type="button"
           onClick={() => onNavigate('settings')}
-          className="inline-flex items-center gap-1.5 rounded-full border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-2.5 py-1 text-[11px] font-medium text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:border-[var(--vf-accent)]/40 transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] px-2.5 py-1 text-[11px] font-mono text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:border-[var(--vf-accent)]/50 transition-colors cursor-pointer"
           title="Execution Mode (click to configure in Settings)"
         >
-          <Cpu className="h-3 w-3 text-[var(--vf-accent)]" />
+          <SlidersHorizontal className="h-3 w-3 text-[var(--vf-accent)]" />
           <span className="hidden md:inline">{MODE_LABELS[executionMode]}</span>
           <span className="md:hidden uppercase">{executionMode}</span>
         </button>
@@ -109,11 +108,11 @@ export function TopBar({ activeRoute, onOpenMobileMenu, onNavigate }: TopBarProp
         <button
           type="button"
           onClick={toggleTheme}
-          className="rounded-xl border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] p-2 text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:border-[var(--vf-accent)]/40 transition-colors cursor-pointer"
+          className="rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] p-1.5 text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:border-[var(--vf-accent)]/50 transition-colors cursor-pointer"
           aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
           title={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
         >
-          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          {theme === 'dark' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
         </button>
       </div>
     </header>

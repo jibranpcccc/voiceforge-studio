@@ -34,6 +34,11 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
+function readCssToken(styles: CSSStyleDeclaration, token: string, fallback: string): string {
+  const val = styles.getPropertyValue(token).trim();
+  return val || fallback;
+}
+
 export function WaveformPlayer({
   samples,
   sampleRate,
@@ -300,7 +305,7 @@ export function WaveformPlayer({
     return { barCount, pitch, peaks };
   }, [samples, containerWidth]);
 
-  // Draw waveform onto high-DPI canvas
+  // Draw waveform onto high-DPI canvas using active theme CSS tokens
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -319,19 +324,33 @@ export function WaveformPlayer({
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, width, heightPx);
 
+    const rootStyles = getComputedStyle(document.documentElement);
     const isDark = theme === 'dark';
-    const bgColor = isDark ? '#0B0D12' : '#EEF1F7';
-    const centerLineColor = isDark ? 'rgba(152, 162, 189, 0.16)' : 'rgba(82, 93, 120, 0.18)';
-    const unplayedColor = isDark ? '#3A4461' : '#B5BFD6';
-    const playedColor = isDark ? '#7C5CFF' : '#6D4AFF';
-    const trimShadeColor = isDark ? 'rgba(7, 9, 14, 0.65)' : 'rgba(15, 20, 34, 0.14)';
-    const trimAccentColor = '#34D399';
-    const playheadColor = isDark ? '#EEF1F8' : '#0F1422';
+    const bgColor = readCssToken(rootStyles, '--vf-bg', isDark ? '#111110' : '#F4F2EC');
+    const centerLineColor = readCssToken(
+      rootStyles,
+      '--vf-border-subtle',
+      isDark ? '#23221F' : '#E4E0D6'
+    );
+    const unplayedColor = readCssToken(rootStyles, '--vf-border', isDark ? '#2E2D29' : '#D5D0C4');
+    const playedColor = readCssToken(rootStyles, '--vf-accent', isDark ? '#E25822' : '#C94514');
+    const subtleTextColor = readCssToken(
+      rootStyles,
+      '--vf-text-subtle',
+      isDark ? '#6E6B63' : '#847F74'
+    );
+    const trimAccentColor = readCssToken(
+      rootStyles,
+      '--vf-success',
+      isDark ? '#2EA067' : '#1F7A4D'
+    );
+    const playheadColor = readCssToken(rootStyles, '--vf-text', isDark ? '#F2EFE9' : '#161513');
+    const trimShadeColor = isDark ? 'rgba(10, 10, 9, 0.65)' : 'rgba(22, 21, 19, 0.14)';
 
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, width, heightPx);
 
-    const midY = heightPx / 2;
+    const midY = Math.round(heightPx / 2) + 0.5;
     ctx.strokeStyle = centerLineColor;
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -340,8 +359,8 @@ export function WaveformPlayer({
     ctx.stroke();
 
     if (!samples || samples.length === 0 || durationSec <= 0) {
-      ctx.fillStyle = isDark ? '#6E7894' : '#78839E';
-      ctx.font = '12px Inter, system-ui, sans-serif';
+      ctx.fillStyle = subtleTextColor;
+      ctx.font = '11px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('No audio loaded', width / 2, midY);
@@ -349,15 +368,15 @@ export function WaveformPlayer({
     }
 
     const playheadX = (clampedTimeSec / durationSec) * width;
-    const maxAmpHalf = Math.max(4, midY - 8);
+    const maxAmpHalf = Math.max(4, heightPx / 2 - 8);
     const { barCount, pitch, peaks } = barPeaks;
 
     for (let i = 0; i < barCount; i += 1) {
       const x = i * pitch;
       const minVal = peaks[i * 2];
       const maxVal = peaks[i * 2 + 1];
-      const topY = midY - maxVal * maxAmpHalf;
-      const bottomY = midY - minVal * maxAmpHalf;
+      const topY = heightPx / 2 - maxVal * maxAmpHalf;
+      const bottomY = heightPx / 2 - minVal * maxAmpHalf;
       const barH = Math.max(2, bottomY - topY);
 
       ctx.fillStyle = x <= playheadX ? playedColor : unplayedColor;
@@ -379,7 +398,7 @@ export function WaveformPlayer({
       }
 
       ctx.strokeStyle = trimAccentColor;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1.5;
 
       ctx.beginPath();
       ctx.moveTo(startX, 0);
@@ -389,15 +408,14 @@ export function WaveformPlayer({
       ctx.stroke();
 
       if (onTrimChange) {
-        // Draw grab tabs at top/bottom for draggable trim handles
         ctx.fillStyle = trimAccentColor;
-        ctx.fillRect(Math.max(0, startX - 4), 0, 8, 12);
-        ctx.fillRect(Math.min(width - 8, endX - 4), 0, 8, 12);
+        ctx.fillRect(Math.max(0, startX - 3), 0, 6, 10);
+        ctx.fillRect(Math.min(width - 6, endX - 3), 0, 6, 10);
       }
     }
 
-    // Playhead cursor
-    ctx.strokeStyle = playheadColor;
+    // Playhead cursor with vermilion indicator cap
+    ctx.strokeStyle = playedColor;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(playheadX, 0);
@@ -405,9 +423,7 @@ export function WaveformPlayer({
     ctx.stroke();
 
     ctx.fillStyle = playheadColor;
-    ctx.beginPath();
-    ctx.arc(playheadX, 5, 3, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fillRect(clamp(playheadX - 2, 0, width - 4), 0, 4, 5);
   }, [
     theme,
     containerWidth,
@@ -546,7 +562,7 @@ export function WaveformPlayer({
 
   return (
     <div
-      className={`rounded-xl border border-[var(--vf-border)] bg-[var(--vf-surface)] ${
+      className={`rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] ${
         compact ? 'p-2.5' : 'p-3.5'
       } ${className}`}
     >
@@ -556,7 +572,7 @@ export function WaveformPlayer({
             {title ?? 'Audio Waveform'}
           </span>
           {hasTrim && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-400 shrink-0">
+            <span className="inline-flex items-center gap-1 text-[11px] font-mono tabular-nums text-[var(--vf-success)] shrink-0">
               <Scissors className="h-3 w-3" />
               <span>
                 {formatTimecode(effectiveTrimStart)} – {formatTimecode(effectiveTrimEnd)}
@@ -566,7 +582,10 @@ export function WaveformPlayer({
         </div>
       )}
 
-      <div ref={containerRef} className="w-full overflow-hidden rounded-lg border border-[var(--vf-border-subtle)]">
+      <div
+        ref={containerRef}
+        className="w-full overflow-hidden rounded-md border border-[var(--vf-border-subtle)] bg-[var(--vf-bg)]"
+      >
         <canvas
           ref={canvasRef}
           onPointerDown={handlePointerDown}
@@ -586,7 +605,7 @@ export function WaveformPlayer({
             type="button"
             disabled={disabled}
             onClick={togglePlay}
-            className={`inline-flex items-center justify-center rounded-lg font-medium transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+            className={`inline-flex items-center justify-center rounded-md font-medium transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
               compact ? 'h-7 px-2.5 text-xs' : 'h-8 px-3 text-xs'
             } bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] text-white`}
             aria-label={isPlaying ? 'Pause playback' : 'Play audio'}
@@ -599,7 +618,7 @@ export function WaveformPlayer({
             type="button"
             disabled={disabled}
             onClick={handleReset}
-            className={`inline-flex items-center justify-center rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+            className={`inline-flex items-center justify-center rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
               compact ? 'h-7 w-7' : 'h-8 w-8'
             }`}
             aria-label="Reset playhead"
@@ -614,7 +633,7 @@ export function WaveformPlayer({
                 type="button"
                 disabled={downloadingFormat !== null}
                 onClick={() => handleQuickDownload('wav16')}
-                className={`inline-flex items-center justify-center gap-1.5 rounded-lg border border-emerald-500/35 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 hover:bg-emerald-500/20 font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`inline-flex items-center justify-center gap-1.5 rounded-md border border-[var(--vf-success)]/40 bg-[var(--vf-success)]/10 text-[var(--vf-success)] hover:bg-[var(--vf-success)]/20 font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                   compact ? 'h-7 px-2 text-[11px]' : 'h-8 px-2.5 text-xs'
                 }`}
                 aria-label="Download WAV"
@@ -632,7 +651,7 @@ export function WaveformPlayer({
                 type="button"
                 disabled={downloadingFormat !== null}
                 onClick={() => handleQuickDownload('mp3_192')}
-                className={`inline-flex items-center justify-center gap-1.5 rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`inline-flex items-center justify-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                   compact ? 'h-7 px-2 text-[11px]' : 'h-8 px-2.5 text-xs'
                 }`}
                 aria-label="Download MP3"
@@ -650,7 +669,7 @@ export function WaveformPlayer({
                 <button
                   type="button"
                   onClick={onOpenExportModal}
-                  className={`inline-flex items-center justify-center gap-1.5 rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] font-medium transition-colors cursor-pointer ${
+                  className={`inline-flex items-center justify-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-surface-elevated)] text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] font-medium transition-colors cursor-pointer ${
                     compact ? 'h-7 px-2 text-[11px]' : 'h-8 px-2.5 text-xs'
                   }`}
                   aria-label="Export Options"
@@ -664,7 +683,7 @@ export function WaveformPlayer({
           )}
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-mono text-[var(--vf-text-muted)]">
+        <div className="flex items-center gap-2 text-xs font-mono tabular-nums text-[var(--vf-text-muted)]">
           <span>
             {formatTimecode(clampedTimeSec)} / {formatTimecode(durationSec)}
           </span>
@@ -677,7 +696,7 @@ export function WaveformPlayer({
       </div>
 
       {downloadError && (
-        <p className="mt-2 text-xs text-rose-500" role="alert">
+        <p className="mt-2 text-xs text-[var(--vf-danger)]" role="alert">
           Download failed: {downloadError}
         </p>
       )}

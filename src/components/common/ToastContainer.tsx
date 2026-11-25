@@ -60,23 +60,23 @@ const TONE_STYLES: Record<
   { border: string; iconClass: string; Icon: typeof Info }
 > = {
   info: {
-    border: 'border-[var(--vf-accent)]/40',
+    border: 'border-l-[var(--vf-accent)]',
     iconClass: 'text-[var(--vf-accent)]',
     Icon: Info,
   },
   success: {
-    border: 'border-emerald-500/40',
-    iconClass: 'text-emerald-400',
+    border: 'border-l-[var(--vf-success)]',
+    iconClass: 'text-[var(--vf-success)]',
     Icon: CheckCircle2,
   },
   warning: {
-    border: 'border-amber-500/40',
-    iconClass: 'text-amber-400',
+    border: 'border-l-[var(--vf-warning)]',
+    iconClass: 'text-[var(--vf-warning)]',
     Icon: TriangleAlert,
   },
   error: {
-    border: 'border-rose-500/40',
-    iconClass: 'text-rose-400',
+    border: 'border-l-[var(--vf-danger)]',
+    iconClass: 'text-[var(--vf-danger)]',
     Icon: AlertCircle,
   },
 };
@@ -99,14 +99,14 @@ export function ToastContainer() {
         return (
           <div
             key={item.id}
-            className={`pointer-events-auto flex items-start gap-3 rounded-xl border ${style.border} bg-[var(--vf-surface)]/95 backdrop-blur-md px-4 py-3 shadow-xl text-sm text-[var(--vf-text)]`}
+            className={`pointer-events-auto flex items-start gap-3 rounded-lg border border-[var(--vf-border)] border-l-2 ${style.border} bg-[var(--vf-surface)]/95 backdrop-blur-sm px-3.5 py-2.5 shadow-xl text-xs text-[var(--vf-text)]`}
             role="status"
           >
             <Icon className={`h-4 w-4 mt-0.5 shrink-0 ${style.iconClass}`} />
             <div className="flex-1 min-w-0">
-              <p className="font-medium leading-snug">{item.title}</p>
+              <p className="font-semibold leading-snug">{item.title}</p>
               {item.message && (
-                <p className="text-xs text-[var(--vf-text-muted)] mt-0.5 break-words">
+                <p className="text-[11px] text-[var(--vf-text-muted)] mt-0.5 break-words">
                   {item.message}
                 </p>
               )}
@@ -114,7 +114,7 @@ export function ToastContainer() {
             <button
               type="button"
               onClick={() => dismiss(item.id)}
-              className="rounded p-1 text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:bg-[var(--vf-surface-muted)] cursor-pointer"
+              className="rounded-md p-1 text-[var(--vf-text-muted)] hover:text-[var(--vf-text)] hover:bg-[var(--vf-surface-muted)] cursor-pointer"
               aria-label="Dismiss notification"
             >
               <X className="h-3.5 w-3.5" />

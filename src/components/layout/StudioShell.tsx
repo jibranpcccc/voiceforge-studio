@@ -3,7 +3,6 @@ import { ShieldCheck } from 'lucide-react';
 import type { AppRoute } from '../../stores/appStore';
 import { useModelStore } from '../../stores/modelStore';
 import { Sidebar } from './Sidebar';
-import { SyntheticBadge } from './SyntheticBadge';
 import { TopBar } from './TopBar';
 
 export interface StudioShellProps {
@@ -40,17 +39,17 @@ export function StudioShell({ activeRoute, onNavigate, children }: StudioShellPr
           {children}
         </main>
 
-        <footer className="border-t border-[var(--vf-border-subtle)] bg-[var(--vf-surface)]/70 px-4 sm:px-6 py-3">
-          <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-[var(--vf-text-muted)]">
+        <footer className="border-t border-[var(--vf-border-subtle)] bg-[var(--vf-surface)]/80 px-4 sm:px-6 py-2.5">
+          <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[11px] text-[var(--vf-text-muted)]">
             <div className="flex items-center gap-2">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+              <ShieldCheck className="h-3.5 w-3.5 text-[var(--vf-success)] shrink-0" />
               <span>
                 100% client-side in your browser — reference audio, voice embeddings, and scripts never leave your device.
               </span>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <SyntheticBadge />
-            </div>
+            <span className="font-mono uppercase tracking-[0.06em] text-[10px] text-[var(--vf-text-subtle)] shrink-0">
+              ONNX Runtime Web · Local Storage Only
+            </span>
           </div>
         </footer>
       </div>

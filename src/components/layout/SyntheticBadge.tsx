@@ -1,4 +1,4 @@
-import { ShieldAlert } from 'lucide-react';
+import { Radio } from 'lucide-react';
 
 export interface SyntheticBadgeProps {
   compact?: boolean;
@@ -9,10 +9,10 @@ export function SyntheticBadge({ compact = false, className = '' }: SyntheticBad
   return (
     <span
       title="Generated audio is synthetic AI speech. VoiceForge Studio processes all audio 100% locally in your browser."
-      className={`inline-flex items-center gap-1.5 rounded-full border border-[var(--vf-accent)]/30 bg-[var(--vf-accent-soft)] px-2.5 py-1 text-[11px] font-medium text-[var(--vf-accent)] ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-2 py-0.5 text-[10px] font-mono uppercase tracking-[0.06em] text-[var(--vf-text-muted)] ${className}`}
     >
-      <ShieldAlert className="h-3.5 w-3.5 shrink-0" />
-      <span>{compact ? 'Synthetic AI Audio' : 'Synthetic AI Speech • 100% Local'}</span>
+      <Radio className="h-3 w-3 text-[var(--vf-accent)] shrink-0" />
+      <span>{compact ? 'Synthetic AI Audio' : 'Synthetic AI Speech · 100% Local'}</span>
     </span>
   );
 }
