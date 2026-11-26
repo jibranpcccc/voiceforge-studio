@@ -10,7 +10,8 @@
  * - 100% content preservation invariant across sequential chunks
  */
 
-import type { EngineId, PronunciationRule, ScriptChunk } from '../types';
+import type { ChunkDspHints, EngineId, PronunciationRule, ScriptChunk } from '../types';
+import { splitParagraphByAudioTags, stripAudioTagsForCounting } from './audioTags';
 import { applyPronunciationRules } from './pronunciation';
 
 export const DEFAULT_MAX_CHARS_BY_ENGINE: Record<string, number> = {
@@ -51,6 +52,14 @@ export interface SegmentedChunk {
   normalizedText: string;
   /** Recommended trailing pause in milliseconds. */
   pauseAfterMs: number;
+  /** Whether `pauseAfterMs` came from an inline pause tag like `[short pause]`. */
+  explicitPauseAfterMs?: boolean;
+  /** Active inline direction tags (e.g., `['intrigued']`). */
+  directionTags?: string[];
+  /** Per-chunk engine parameter overrides derived from inline direction tags. */
+  parameterOverrides?: Record<string, number | string | boolean>;
+  /** Per-chunk subtle DSP hints derived from inline direction tags. */
+  dspHints?: ChunkDspHints;
   /** Character count of `text`. */
   charCount: number;
   /** Word count of `text`. */
@@ -140,8 +149,9 @@ export function countWordsAndChars(text: string): WordAndCharCounts {
   if (!text) {
     return { words: 0, chars: 0, charsNoSpaces: 0, paragraphs: 0 };
   }
+  const spokenOnly = stripAudioTagsForCounting(text).trim();
   const trimmed = text.trim();
-  const words = trimmed ? trimmed.split(/\s+/).length : 0;
+  const words = spokenOnly ? spokenOnly.split(/\s+/).length : 0;
   const chars = text.length;
   const charsNoSpaces = text.replace(/\s+/g, '').length;
   const paragraphs = trimmed
@@ -418,42 +428,71 @@ export function segmentScript(
 
   for (let paragraphIndex = 0; paragraphIndex < paragraphs.length; paragraphIndex += 1) {
     const paragraph = paragraphs[paragraphIndex];
-    const sentences = splitParagraphIntoSentences(paragraph);
-    const paragraphUnits: string[] = [];
+    const directedSpans = splitParagraphByAudioTags(paragraph, options.engineId);
 
-    for (const sentence of sentences) {
-      if (sentence.length <= maxCharsPerChunk) {
-        paragraphUnits.push(sentence);
-      } else {
-        paragraphUnits.push(...splitOversizedText(sentence, maxCharsPerChunk));
-      }
+    interface PackedUnitMeta {
+      text: string;
+      directionTags: string[];
+      parameterOverrides: Record<string, number>;
+      dspHints?: ChunkDspHints;
+      explicitPauseAfterMs?: number;
     }
 
-    // Greedily pack consecutive units within the same paragraph up to `maxCharsPerChunk`
-    const packedParagraphChunks: string[] = [];
-    let current = '';
+    const packedParagraphChunks: PackedUnitMeta[] = [];
 
-    for (const unit of paragraphUnits) {
-      if (!current) {
-        current = unit;
-      } else if (current.length + 1 + unit.length <= maxCharsPerChunk) {
-        current = `${current} ${unit}`;
-      } else {
-        packedParagraphChunks.push(current);
-        current = unit;
+    for (const span of directedSpans) {
+      const sentences = splitParagraphIntoSentences(span.text);
+      const spanUnits: string[] = [];
+
+      for (const sentence of sentences) {
+        if (sentence.length <= maxCharsPerChunk) {
+          spanUnits.push(sentence);
+        } else {
+          spanUnits.push(...splitOversizedText(sentence, maxCharsPerChunk));
+        }
       }
-    }
-    if (current) {
-      packedParagraphChunks.push(current);
+
+      // Greedily pack consecutive units within the same directed span up to `maxCharsPerChunk`
+      const packedTexts: string[] = [];
+      let current = '';
+
+      for (const unit of spanUnits) {
+        if (!current) {
+          current = unit;
+        } else if (current.length + 1 + unit.length <= maxCharsPerChunk) {
+          current = `${current} ${unit}`;
+        } else {
+          packedTexts.push(current);
+          current = unit;
+        }
+      }
+      if (current) {
+        packedTexts.push(current);
+      }
+
+      for (let k = 0; k < packedTexts.length; k += 1) {
+        const isLastInSpan = k === packedTexts.length - 1;
+        packedParagraphChunks.push({
+          text: packedTexts[k],
+          directionTags: span.directionTags,
+          parameterOverrides: span.parameterOverrides,
+          ...(span.dspHints ? { dspHints: span.dspHints } : {}),
+          ...(isLastInSpan && span.explicitPauseAfterMs && span.pauseAfterMs !== undefined
+            ? { explicitPauseAfterMs: span.pauseAfterMs }
+            : {}),
+        });
+      }
     }
 
     for (let i = 0; i < packedParagraphChunks.length; i += 1) {
-      const text = packedParagraphChunks[i];
+      const meta = packedParagraphChunks[i];
+      const text = meta.text;
       const isParagraphEnd = i === packedParagraphChunks.length - 1;
       const orderIndex = chunks.length;
       const normalizedText =
         rules && rules.length > 0 ? applyPronunciationRules(text, rules) : text;
       const counts = countWordsAndChars(text);
+      const hasOverrides = Object.keys(meta.parameterOverrides).length > 0;
 
       chunks.push({
         orderIndex,
@@ -462,7 +501,16 @@ export function segmentScript(
         isParagraphEnd,
         text,
         normalizedText,
-        pauseAfterMs: isParagraphEnd ? paragraphPauseMs : sentencePauseMs,
+        pauseAfterMs:
+          meta.explicitPauseAfterMs !== undefined
+            ? meta.explicitPauseAfterMs
+            : isParagraphEnd
+              ? paragraphPauseMs
+              : sentencePauseMs,
+        ...(meta.explicitPauseAfterMs !== undefined ? { explicitPauseAfterMs: true } : {}),
+        ...(meta.directionTags.length > 0 ? { directionTags: meta.directionTags } : {}),
+        ...(hasOverrides ? { parameterOverrides: meta.parameterOverrides } : {}),
+        ...(meta.dspHints ? { dspHints: meta.dspHints } : {}),
         charCount: text.length,
         wordCount: counts.words,
       });
@@ -486,6 +534,10 @@ export function segmentScriptToProjectChunks(
     rawText: chunk.text,
     normalizedText: chunk.normalizedText,
     pauseAfterMs: chunk.pauseAfterMs,
+    ...(chunk.explicitPauseAfterMs ? { explicitPauseAfterMs: true } : {}),
+    ...(chunk.directionTags ? { directionTags: chunk.directionTags } : {}),
+    ...(chunk.parameterOverrides ? { parameterOverrides: chunk.parameterOverrides } : {}),
+    ...(chunk.dspHints ? { dspHints: chunk.dspHints } : {}),
     status: 'pending',
   }));
 }

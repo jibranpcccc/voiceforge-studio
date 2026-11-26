@@ -9,6 +9,10 @@ import {
   Upload,
 } from 'lucide-react';
 import {
+  QUICK_INSERT_AUDIO_TAGS,
+  countAudioTags,
+} from '../../services/audioTags';
+import {
   countWordsAndChars,
   estimateNarrationDurationSec,
 } from '../../services/segmenter';
@@ -45,6 +49,31 @@ export function ScriptEditor({
 
   const counts = countWordsAndChars(scriptText);
   const estDurationSec = estimateNarrationDurationSec(scriptText, 150);
+  const activeTagCount = countAudioTags(scriptText);
+
+  const handleInsertTag = (tag: string) => {
+    if (disabled) return;
+    const el = textareaRef?.current;
+    if (!el) {
+      const sep = scriptText && !/\s$/.test(scriptText) ? ' ' : '';
+      onChange(`${scriptText}${sep}${tag} `);
+      return;
+    }
+    const start = el.selectionStart ?? scriptText.length;
+    const end = el.selectionEnd ?? start;
+    const before = scriptText.slice(0, start);
+    const after = scriptText.slice(end);
+    const needLeadingSpace = before.length > 0 && !/\s$/.test(before);
+    const needTrailingSpace = after.length === 0 || !/^\s/.test(after);
+    const insertion = `${needLeadingSpace ? ' ' : ''}${tag}${needTrailingSpace ? ' ' : ''}`;
+    const nextText = `${before}${insertion}${after}`;
+    onChange(nextText);
+    const nextCursor = before.length + insertion.length;
+    window.requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(nextCursor, nextCursor);
+    });
+  };
 
   const handleTxtFile = async (file: File) => {
     setImportError(null);
@@ -171,6 +200,32 @@ export function ScriptEditor({
           {importError}
         </div>
       )}
+
+      {/* Inline Audio Direction Tags Strip */}
+      <div className="px-4 py-2 border-b border-[var(--vf-border-subtle)] bg-[var(--vf-surface-elevated)]/60 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-[var(--vf-text-subtle)] mr-1">
+            Direction Tags:
+          </span>
+          {QUICK_INSERT_AUDIO_TAGS.map((item) => (
+            <button
+              key={item.tag}
+              type="button"
+              disabled={disabled}
+              onClick={() => handleInsertTag(item.tag)}
+              title={`${item.hint} — click to insert ${item.tag}`}
+              className="px-2 py-0.5 rounded-sm border border-[var(--vf-border)] bg-[var(--vf-bg)] hover:border-[var(--vf-accent)] text-[11px] font-mono text-[var(--vf-text-muted)] hover:text-[var(--vf-accent)] disabled:opacity-40 transition cursor-pointer"
+            >
+              {item.tag}
+            </button>
+          ))}
+        </div>
+        {activeTagCount > 0 && (
+          <span className="text-[11px] font-mono tabular-nums text-[var(--vf-accent)]">
+            {activeTagCount} cue{activeTagCount === 1 ? '' : 's'} active
+          </span>
+        )}
+      </div>
 
       {/* Textarea */}
       <div className="relative bg-[var(--vf-bg)]/40">

@@ -1,4 +1,4 @@
-import type { AudioBufferData, MasteringPreset, MasteringSettings } from '../types';
+import type { AudioBufferData, ChunkDspHints, MasteringPreset, MasteringSettings } from '../types';
 import { downmixToMono, pcmToAudioBufferData, resamplePcm } from './decoder';
 import {
   applyBiquadInPlace,
@@ -36,6 +36,10 @@ export interface ChunkJoinOptions extends MasteringExtraOptions {
    * Overrides `pauseDurationMs` for the corresponding boundary.
    */
   pauseDurationsMs?: number[];
+  /**
+   * Optional per-chunk subtle speed/EQ/trim hints driven by inline audio tags.
+   */
+  chunkDspHints?: Array<ChunkDspHints | undefined>;
   /**
    * Short cosine crossfade in milliseconds applied ONLY when joining adjacent chunks
    * directly without a silence gap (`pauseMs === 0`). Default: 8 ms (clamped to 0-12 ms).
@@ -649,6 +653,53 @@ export function masterAudio(
  *   directly with zero silence gap (`pauseMs === 0`).
  * - Applies mastering DSP across the stitched timeline (bypassed when `preset === 'raw'`).
  */
+function applyChunkDspHints(
+  mono: Float32Array,
+  sampleRate: number,
+  hints?: ChunkDspHints
+): Float32Array {
+  if (!hints || mono.length === 0) return mono;
+
+  let working = mono;
+  if (
+    typeof hints.speedMultiplier === 'number' &&
+    Number.isFinite(hints.speedMultiplier) &&
+    Math.abs(hints.speedMultiplier - 1.0) >= 0.005
+  ) {
+    const safeSpeed = Math.max(0.85, Math.min(1.18, hints.speedMultiplier));
+    working = wsolaTimeStretch(working, sampleRate, safeSpeed);
+  } else {
+    working = new Float32Array(working);
+  }
+
+  if (typeof hints.eqLowDeltaDb === 'number' && Math.abs(hints.eqLowDeltaDb) >= 0.05) {
+    applyBiquadInPlace(
+      working,
+      designLowShelf(sampleRate, 180, Math.max(-6, Math.min(6, hints.eqLowDeltaDb)))
+    );
+  }
+  if (typeof hints.eqMidDeltaDb === 'number' && Math.abs(hints.eqMidDeltaDb) >= 0.05) {
+    applyBiquadInPlace(
+      working,
+      designPeaking(sampleRate, 1800, 1.0, Math.max(-4, Math.min(4, hints.eqMidDeltaDb)))
+    );
+  }
+  if (typeof hints.eqHighDeltaDb === 'number' && Math.abs(hints.eqHighDeltaDb) >= 0.05) {
+    applyBiquadInPlace(
+      working,
+      designHighShelf(sampleRate, 4500, Math.max(-6, Math.min(6, hints.eqHighDeltaDb)))
+    );
+  }
+  if (typeof hints.gainDeltaDb === 'number' && Math.abs(hints.gainDeltaDb) >= 0.05) {
+    const gain = dbToLinear(Math.max(-6, Math.min(4, hints.gainDeltaDb)));
+    for (let i = 0; i < working.length; i += 1) {
+      working[i] = clampSample(working[i] * gain);
+    }
+  }
+
+  return working;
+}
+
 export function masterNarrationChunks(
   chunks: AudioBufferData[],
   settings: MasteringSettings & MasteringExtraOptions,
@@ -659,12 +710,12 @@ export function masterNarrationChunks(
   }
 
   const targetSampleRate = chunks[0].sampleRate;
-  const normalizedChunks: Float32Array[] = chunks.map((chunk) => {
+  const normalizedChunks: Float32Array[] = chunks.map((chunk, idx) => {
     let mono = downmixToMono(chunk.samples, Math.max(1, chunk.channels || 1));
     if (chunk.sampleRate !== targetSampleRate) {
       mono = resamplePcm(mono, chunk.sampleRate, targetSampleRate, 1);
     }
-    return mono;
+    return applyChunkDspHints(mono, targetSampleRate, joinOptions.chunkDspHints?.[idx]);
   });
 
   const defaultPauseMs = Math.max(0, joinOptions.pauseDurationMs ?? 0);

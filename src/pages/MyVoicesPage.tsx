@@ -6,6 +6,7 @@ import {
   Copy,
   Download,
   Edit3,
+  Loader2,
   Plus,
   Search,
   ShieldCheck,
@@ -16,6 +17,11 @@ import {
   X,
 } from 'lucide-react';
 import { WaveformPlayer } from '../components/audio/WaveformPlayer';
+import {
+  BUILTIN_VOICES,
+  fetchBuiltinVoiceAudioBuffer,
+  type BuiltinVoiceCatalogEntry,
+} from '../services/builtinVoices';
 import { VoiceProfileImportError } from '../services/voiceProfileIO';
 import {
   deleteAudioChunk,
@@ -82,6 +88,7 @@ export function MyVoicesPage() {
   const [deleteTarget, setDeleteTarget] = useState<VoiceProfile | null>(null);
 
   const [activePreview, setActivePreview] = useState<LoadedPreviewAudio | null>(null);
+  const [loadingBuiltinId, setLoadingBuiltinId] = useState<string | null>(null);
   const [previewNotice, setPreviewNotice] = useState<{ voiceId: string; message: string } | null>(
     null
   );
@@ -281,6 +288,42 @@ export function MyVoicesPage() {
       window.location.hash = '#/studio';
     },
     [currentStudioEngine, selectStudioEngine, selectStudioVoice]
+  );
+
+  const handlePreviewBuiltinVoice = useCallback(
+    async (entry: BuiltinVoiceCatalogEntry) => {
+      setPreviewNotice(null);
+      if (activePreview?.voiceId === entry.id) {
+        setActivePreview(null);
+        return;
+      }
+      setLoadingBuiltinId(entry.id);
+      try {
+        const buf = await fetchBuiltinVoiceAudioBuffer(entry);
+        setActivePreview({
+          voiceId: entry.id,
+          label: `${entry.license} Sample`,
+          samples: buf.samples,
+          sampleRate: buf.sampleRate,
+        });
+      } catch (err) {
+        setPreviewNotice({
+          voiceId: entry.id,
+          message: err instanceof Error ? err.message : String(err),
+        });
+      } finally {
+        setLoadingBuiltinId(null);
+      }
+    },
+    [activePreview]
+  );
+
+  const handleUseBuiltinInStudio = useCallback(
+    (entry: BuiltinVoiceCatalogEntry) => {
+      selectStudioVoice(entry.id);
+      window.location.hash = '#/studio';
+    },
+    [selectStudioVoice]
   );
 
   const handleConfirmDelete = useCallback(async () => {
@@ -685,6 +728,111 @@ export function MyVoicesPage() {
           })}
         </div>
       )}
+
+      {/* Built-In Open-Licensed Voices */}
+      <section className="space-y-3 pt-2 border-t border-[var(--vf-border-subtle)]">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="text-base font-semibold tracking-tight text-[var(--vf-text)]">
+              Built-In Open-Licensed Voices
+            </h2>
+            <p className="text-xs text-[var(--vf-text-muted)]">
+              Ready-to-use permissive voices ({BUILTIN_VOICES.length} narrators, CC0 / CC-BY-4.0 / MIT). Cached locally and auto-encoded in your browser on first Studio run — no manual cloning needed.
+            </p>
+          </div>
+          <span className="rounded-sm border border-[var(--vf-border)] bg-[var(--vf-surface)] px-2.5 py-1 text-[11px] font-mono text-[var(--vf-text-muted)]">
+            0 API keys · Unlimited chars
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
+          {BUILTIN_VOICES.map((entry) => {
+            const isPreviewOpen = activePreview?.voiceId === entry.id;
+            const isLoadingSample = loadingBuiltinId === entry.id;
+            const isSavedLocally = voices.some((v) => v.id === entry.id);
+
+            return (
+              <article
+                key={entry.id}
+                className="rounded-lg border border-[var(--vf-border)] bg-[var(--vf-surface)] p-4 space-y-2.5"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-sm font-semibold text-[var(--vf-text)] truncate">
+                        {entry.name}
+                      </h3>
+                      <span className="rounded-sm border border-[var(--vf-success)]/35 bg-[var(--vf-success)]/12 px-1.5 py-0.5 text-[10px] font-mono font-semibold text-[var(--vf-success)]">
+                        {entry.license}
+                      </span>
+                      {isSavedLocally && (
+                        <span className="rounded-sm border border-[var(--vf-accent)]/35 bg-[var(--vf-accent-soft)] px-1.5 py-0.5 text-[10px] font-mono font-semibold text-[var(--vf-accent)]">
+                          Encoded Locally
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] font-mono text-[var(--vf-text-subtle)] mt-0.5">
+                      {entry.role}
+                    </p>
+                  </div>
+                </div>
+
+                <p className="text-xs text-[var(--vf-text-muted)] leading-relaxed">
+                  {entry.description}
+                </p>
+
+                <p className="text-[11px] text-[var(--vf-text-subtle)] truncate" title={entry.attribution}>
+                  Source: {entry.attribution}
+                </p>
+
+                {previewNotice?.voiceId === entry.id && (
+                  <p className="text-[11px] text-[var(--vf-warning)]">
+                    {previewNotice.message}
+                  </p>
+                )}
+
+                {isPreviewOpen && activePreview && (
+                  <WaveformPlayer
+                    samples={activePreview.samples}
+                    sampleRate={activePreview.sampleRate}
+                    title={`${entry.name} — ${activePreview.label}`}
+                    compact
+                  />
+                )}
+
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--vf-border-subtle)]">
+                  <button
+                    type="button"
+                    disabled={isLoadingSample}
+                    onClick={() => void handlePreviewBuiltinVoice(entry)}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-2.5 py-1.5 text-xs font-medium text-[var(--vf-text)] hover:border-[var(--vf-accent)]/50 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {isLoadingSample ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin text-[var(--vf-accent)]" />
+                    ) : (
+                      <Volume2 className="h-3.5 w-3.5 text-[var(--vf-accent)]" />
+                    )}
+                    {isLoadingSample
+                      ? 'Fetching Sample...'
+                      : isPreviewOpen
+                        ? 'Hide Sample'
+                        : 'Listen Sample'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleUseBuiltinInStudio(entry)}
+                    className="inline-flex items-center gap-1.5 rounded-md bg-[var(--vf-accent)] hover:bg-[var(--vf-accent-hover)] px-3 py-1.5 text-xs font-semibold text-white transition-colors cursor-pointer"
+                  >
+                    Use in Studio
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
 
       {/* Permanent Delete Confirmation Modal */}
       {deleteTarget && (

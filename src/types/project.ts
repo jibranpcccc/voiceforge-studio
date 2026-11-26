@@ -13,6 +13,19 @@ export type ChunkStatus =
   | 'failed'
   | 'cancelled';
 
+export interface ChunkDspHints {
+  /** Subtle per-chunk WSOLA speed multiplier derived from inline direction tags (0.85–1.18). */
+  speedMultiplier?: number;
+  /** Low-shelf EQ delta in dB (-6 to +6). */
+  eqLowDeltaDb?: number;
+  /** Mid-band presence EQ delta in dB (-4 to +4). */
+  eqMidDeltaDb?: number;
+  /** High-shelf air/brightness EQ delta in dB (-6 to +6). */
+  eqHighDeltaDb?: number;
+  /** Gentle output trim delta in dB (-6 to +4). */
+  gainDeltaDb?: number;
+}
+
 export interface ScriptChunk {
   /** Unique chunk ID. */
   id: string;
@@ -24,6 +37,12 @@ export interface ScriptChunk {
   normalizedText: string;
   /** Optional pause duration appended after this chunk in milliseconds. */
   pauseAfterMs: number;
+  /** Whether `pauseAfterMs` was set explicitly by an inline pause tag like `[short pause]`. */
+  explicitPauseAfterMs?: boolean;
+  /** Optional inline voice direction / delivery cues active for this chunk. */
+  directionTags?: string[];
+  /** Optional per-chunk DSP hints applied during non-destructive mastering. */
+  dspHints?: ChunkDspHints;
   /** Optional per-chunk engine parameter overrides. */
   parameterOverrides?: Record<string, number | string | boolean>;
   /** Current synthesis status. */

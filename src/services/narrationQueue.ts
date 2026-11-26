@@ -30,6 +30,7 @@ import type {
 } from '../types';
 import { extractEngineParametersForEngine } from './presets';
 import { applyPronunciationRules } from './pronunciation';
+import { stripAudioTagsForEngine } from './audioTags';
 
 export interface NarrationQueueOptions {
   registry?: EngineRegistry;
@@ -340,7 +341,10 @@ export class NarrationQueueService {
         normalizedText:
           options.preserveNormalizedText && chunk.normalizedText
             ? chunk.normalizedText
-            : applyPronunciationRules(chunk.rawText, loaded.pronunciationRules),
+            : applyPronunciationRules(
+                stripAudioTagsForEngine(chunk.rawText, loaded.engineId),
+                loaded.pronunciationRules
+              ),
         status:
           chunk.status === 'completed'
             ? ('completed' as const)
@@ -503,7 +507,7 @@ export class NarrationQueueService {
     const existingChunk = project.chunks[targetIndex];
     const nextRawText = overrides?.rawText ?? existingChunk.rawText;
     const nextNormalizedText = applyPronunciationRules(
-      nextRawText,
+      stripAudioTagsForEngine(nextRawText, project.engineId),
       project.pronunciationRules
     );
     const nextParamOverrides =
@@ -734,7 +738,10 @@ export class NarrationQueueService {
 
           const textToSynthesize =
             targetChunk.normalizedText ||
-            applyPronunciationRules(targetChunk.rawText, project.pronunciationRules);
+            applyPronunciationRules(
+              stripAudioTagsForEngine(targetChunk.rawText, project.engineId),
+              project.pronunciationRules
+            );
 
           const mergedParameters = extractEngineParametersForEngine(
             {

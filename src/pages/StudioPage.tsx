@@ -38,6 +38,12 @@ import {
 } from '../components/studio';
 import { STUDIO_PRESET_LIST, extractEngineParametersForEngine } from '../services/presets';
 import {
+  BUILTIN_VOICES,
+  DEFAULT_BUILTIN_VOICE_ID,
+  ensureBuiltinVoiceEncoded,
+  getBuiltinVoiceById,
+} from '../services/builtinVoices';
+import {
   computeQueueState,
   narrationQueue,
   type RunQueueOptions,
@@ -197,10 +203,24 @@ export function StudioPage() {
     [voices, selectedVoiceId]
   );
 
-  const voiceCompatible = useMemo(
-    () => isVoiceCompatibleWithEngine(selectedVoice, activeEngine),
-    [selectedVoice, activeEngine]
+  const selectedBuiltinVoice = useMemo(
+    () => getBuiltinVoiceById(selectedVoiceId) ?? null,
+    [selectedVoiceId]
   );
+
+  const unencodedBuiltinVoices = useMemo(() => {
+    const savedIds = new Set(voices.map((v) => v.id));
+    return BUILTIN_VOICES.filter((b) => !savedIds.has(b.id));
+  }, [voices]);
+
+  const voiceCompatible = useMemo(() => {
+    if (isVoiceCompatibleWithEngine(selectedVoice, activeEngine)) {
+      return true;
+    }
+    return Boolean(selectedBuiltinVoice && activeEngine);
+  }, [selectedVoice, selectedBuiltinVoice, activeEngine]);
+
+  const hasSelectedVoice = Boolean(selectedVoice || selectedBuiltinVoice);
 
   const supportedLanguages = useMemo(
     () => activeEngine?.getSupportedLanguages() ?? [{ code: 'en', name: 'English', nativeName: 'English' }],
@@ -230,10 +250,10 @@ export function StudioPage() {
     void listHistoryEntries(30).then(setHistoryEntries).catch(() => undefined);
   }, [loadVoices, loadPronunciationRules, loadManifest, manifest]);
 
-  // Auto-select default voice if none chosen yet
+  // Auto-select default voice (or built-in open-licensed narrator) if none chosen yet
   useEffect(() => {
-    if (!selectedVoiceId && voices.length > 0) {
-      selectVoice(defaultVoiceId ?? voices[0].id);
+    if (!selectedVoiceId) {
+      selectVoice(defaultVoiceId ?? voices[0]?.id ?? DEFAULT_BUILTIN_VOICE_ID);
     }
   }, [selectedVoiceId, voices, defaultVoiceId, selectVoice]);
 
@@ -267,9 +287,16 @@ export function StudioPage() {
           pronunciationRules: project.pronunciationRules,
         });
         const pauseDurationsMs = completedInOrder.slice(0, -1).map((chunk, idx) => {
+          if (chunk.explicitPauseAfterMs) {
+            return chunk.pauseAfterMs;
+          }
           const seg = segMeta[chunk.index] ?? segMeta[idx];
           if (seg) {
-            return seg.isParagraphEnd ? paragraphPauseMs : sentencePauseMs;
+            return seg.explicitPauseAfterMs
+              ? seg.pauseAfterMs
+              : seg.isParagraphEnd
+                ? paragraphPauseMs
+                : sentencePauseMs;
           }
           return chunk.pauseAfterMs ?? sentencePauseMs;
         });
@@ -285,6 +312,7 @@ export function StudioPage() {
           {
             pauseDurationMs: sentencePauseMs,
             pauseDurationsMs,
+            chunkDspHints: completedInOrder.map((c) => c.dspHints),
             crossfadeMs: chunkCrossfadeMs,
           }
         );
@@ -368,6 +396,9 @@ export function StudioPage() {
     status: ScriptChunk['status'];
     audioDurationSec?: number;
     errorMessage?: string;
+    directionTags?: string[];
+    pauseAfterMs?: number;
+    explicitPauseAfterMs?: boolean;
   }> = useMemo(() => {
     if (usingSavedProjectChunks && activeProject) {
       return activeProject.chunks.map((c) => ({
@@ -378,6 +409,9 @@ export function StudioPage() {
         status: c.status,
         audioDurationSec: c.audioDurationSec,
         errorMessage: c.errorMessage,
+        directionTags: c.directionTags,
+        pauseAfterMs: c.pauseAfterMs,
+        explicitPauseAfterMs: c.explicitPauseAfterMs,
       }));
     }
     return segmentedPreview.map((seg) => ({
@@ -387,6 +421,9 @@ export function StudioPage() {
       rawText: seg.text,
       normalizedText: seg.normalizedText,
       status: 'pending' as const,
+      directionTags: seg.directionTags,
+      pauseAfterMs: seg.pauseAfterMs,
+      explicitPauseAfterMs: seg.explicitPauseAfterMs,
     }));
   }, [usingSavedProjectChunks, activeProject, segmentedPreview]);
 
@@ -607,8 +644,8 @@ export function StudioPage() {
       setStudioError('Enter or import a narration script before generating.');
       return;
     }
-    if (!selectedVoice) {
-      setStudioError('Select a Voice Profile first (or create one in Voice Cloning).');
+    if (!hasSelectedVoice) {
+      setStudioError('Select a Voice Profile first (built-in or cloned in Voice Cloning).');
       return;
     }
     if (!activeEngine) {
@@ -617,7 +654,7 @@ export function StudioPage() {
     }
     if (!voiceCompatible) {
       setStudioError(
-        `Voice '${selectedVoice.name}' does not have conditioning for '${activeEngine.name}'. Switch engine or encode it for ${activeEngine.name}.`
+        `Voice '${selectedVoice?.name ?? selectedVoiceId}' does not have conditioning for '${activeEngine.name}'. Switch engine or encode it for ${activeEngine.name}.`
       );
       return;
     }
@@ -628,13 +665,29 @@ export function StudioPage() {
       });
       setInitProgress(null);
 
+      let effectiveVoice: VoiceProfile | null = selectedVoice;
+      if (!effectiveVoice || !isVoiceCompatibleWithEngine(effectiveVoice, activeEngine)) {
+        if (!selectedBuiltinVoice) {
+          setStudioError(
+            `Voice '${selectedVoice?.name ?? selectedVoiceId}' is not encoded for '${activeEngine.name}'.`
+          );
+          return;
+        }
+        setStudioNotice(
+          `Preparing built-in voice "${selectedBuiltinVoice.name}" locally (${selectedBuiltinVoice.license})...`
+        );
+        effectiveVoice = await ensureBuiltinVoiceEncoded(selectedBuiltinVoice, activeEngine);
+        await loadVoices();
+        setStudioNotice(null);
+      }
+
       // Reuse active project if same script & voice & engine and already has completed chunks, else create fresh project
       let project: NarrationProject;
       if (
         activeProject &&
         activeProject.id === activeProjectId &&
         activeProject.scriptText === scriptText &&
-        activeProject.voiceProfileId === selectedVoice.id &&
+        activeProject.voiceProfileId === effectiveVoice.id &&
         activeProject.engineId === activeEngine.id
       ) {
         project = await saveProjectRecord({
@@ -654,7 +707,7 @@ export function StudioPage() {
       } else {
         project = await createProject({
           name: projectTitle,
-          voiceProfileId: selectedVoice.id,
+          voiceProfileId: effectiveVoice.id,
           engineId: activeEngine.id,
           executionMode,
           presetId: selectedPresetId,
@@ -677,7 +730,7 @@ export function StudioPage() {
       const finished = await executeQueueWithStreaming(
         project,
         startProjectQueue,
-        selectedVoice
+        effectiveVoice
       );
       await recordRunInHistory(finished);
     } catch (err) {
@@ -736,7 +789,7 @@ export function StudioPage() {
   };
 
   const handleRegenerateChunk = async (chunkId: string) => {
-    if (!activeProject || !selectedVoice || !activeEngine || queueState.isRunning) return;
+    if (!activeProject || !hasSelectedVoice || !activeEngine || queueState.isRunning) return;
     setStudioError(null);
     setRegeneratingChunkId(chunkId);
     try {
@@ -744,8 +797,16 @@ export function StudioPage() {
         setInitProgress(progress);
       });
       setInitProgress(null);
+      let effectiveVoice = selectedVoice;
+      if (!effectiveVoice || !isVoiceCompatibleWithEngine(effectiveVoice, activeEngine)) {
+        if (!selectedBuiltinVoice) {
+          throw new Error(`Voice '${selectedVoice?.name ?? selectedVoiceId}' is not encoded for '${activeEngine.name}'.`);
+        }
+        effectiveVoice = await ensureBuiltinVoiceEncoded(selectedBuiltinVoice, activeEngine);
+        await loadVoices();
+      }
       const updated = await regenerateSingleChunk(activeProject.id, chunkId, {
-        voiceProfile: selectedVoice,
+        voiceProfile: effectiveVoice,
       });
       const map = await loadProjectAudioChunkMap(updated.id);
       setRawChunkMap(map);
@@ -894,17 +955,26 @@ export function StudioPage() {
             disabled={queueState.isRunning}
             className="w-full rounded-md border border-[var(--vf-border)] bg-[var(--vf-bg)] px-2.5 py-1.5 text-xs text-[var(--vf-text)] focus:border-[var(--vf-accent)] focus:outline-none"
           >
-            {voices.length === 0 ? (
-              <option value="">No saved voices (create in Voice Cloning)</option>
-            ) : (
-              voices.map((voice) => {
-                const engIds = getProfileEngineIds(voice);
-                return (
-                  <option key={voice.id} value={voice.id}>
-                    {voice.name} ({engIds.join(', ') || 'unencoded'})
+            {voices.length > 0 && (
+              <optgroup label="My Saved &amp; Cloned Voices">
+                {voices.map((voice) => {
+                  const engIds = getProfileEngineIds(voice);
+                  return (
+                    <option key={voice.id} value={voice.id}>
+                      {voice.name} ({engIds.join(', ') || 'unencoded'})
+                    </option>
+                  );
+                })}
+              </optgroup>
+            )}
+            {unencodedBuiltinVoices.length > 0 && (
+              <optgroup label="Built-In Open-Licensed Voices (Ready to Use)">
+                {unencodedBuiltinVoices.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name} ({b.license} · Built-in)
                   </option>
-                );
-              })
+                ))}
+              </optgroup>
             )}
           </select>
         </div>
@@ -972,7 +1042,7 @@ export function StudioPage() {
       </div>
 
       {/* Voice / Engine Compatibility Warning */}
-      {selectedVoice && activeEngine && !voiceCompatible && (
+      {selectedVoice && !selectedBuiltinVoice && activeEngine && !voiceCompatible && (
         <div className="rounded-lg border border-[var(--vf-warning)]/30 bg-[var(--vf-warning)]/10 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--vf-text)]">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-[var(--vf-warning)] shrink-0" />
@@ -1047,7 +1117,7 @@ export function StudioPage() {
                 disabled={
                   queueState.isRunning ||
                   !scriptText.trim() ||
-                  !selectedVoice ||
+                  !hasSelectedVoice ||
                   !voiceCompatible
                 }
                 onClick={() => void handleGenerate()}
@@ -1229,6 +1299,9 @@ export function StudioPage() {
                         {item.audioDurationSec !== undefined
                           ? ` · ${item.audioDurationSec.toFixed(1)}s`
                           : ''}
+                        {item.explicitPauseAfterMs && item.pauseAfterMs
+                          ? ` · ${item.pauseAfterMs}ms pause`
+                          : ''}
                       </span>
                       <span
                         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[10px] font-mono font-semibold uppercase ${
@@ -1246,6 +1319,19 @@ export function StudioPage() {
                         {item.status === 'synthesizing' ? 'generating' : item.status}
                       </span>
                     </div>
+
+                    {item.directionTags && item.directionTags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-1.5">
+                        {item.directionTags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="inline-flex items-center rounded-sm border border-[var(--vf-accent)]/35 bg-[var(--vf-accent-soft)] px-1.5 py-0.5 text-[10px] font-mono text-[var(--vf-accent)]"
+                          >
+                            [{tag}]
+                          </span>
+                        ))}
+                      </div>
+                    )}
 
                     <p className="text-xs text-[var(--vf-text-muted)] line-clamp-3">
                       {item.rawText}
