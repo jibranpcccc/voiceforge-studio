@@ -134,4 +134,73 @@ describe('inline audio tag & direction engine', () => {
       expect(entry.sizeBytes).toBeGreaterThan(100_000);
     }
   });
+
+  it('handles broad free-form emotions, adverbs, intensity modifiers, slash compounds, breath phrases, and citations', () => {
+    // 1. Adverbs & wide synonym vocabulary
+    expect(parseAudioTag('sarcastically')?.kind).toBe('delivery');
+    expect(parseAudioTag('suspenseful')?.dspHints?.speedMultiplier).toBeGreaterThan(1.0);
+    expect(parseAudioTag('authoritative')?.dspHints?.eqLowDeltaDb).toBeGreaterThan(1.0);
+    expect(parseAudioTag('shouting')?.dspHints?.gainDeltaDb).toBeGreaterThan(1.5);
+    expect(parseAudioTag('reflective')?.dspHints?.speedMultiplier).toBeLessThan(1.0);
+    expect(parseAudioTag('whispered')?.chatterboxToken).toBe('[whisper]');
+    expect(parseAudioTag('playfully')?.chatterboxParameters?.exaggeration).toBeGreaterThan(0.5);
+
+    // 2. Intensity scaling (`very tense` stronger than `slightly tense`)
+    const slight = parseAudioTag('slightly tense');
+    const intense = parseAudioTag('very tense');
+    expect(intense!.dspHints!.speedMultiplier!).toBeGreaterThan(slight!.dspHints!.speedMultiplier!);
+    expect(intense!.dspHints!.eqHighDeltaDb!).toBeGreaterThan(slight!.dspHints!.eqHighDeltaDb!);
+    expect(intense!.chatterboxParameters!.exaggeration!).toBeGreaterThan(
+      slight!.chatterboxParameters!.exaggeration!
+    );
+
+    // 3. Natural pause & breath phrasings
+    expect(parseAudioTag('0.8s pause')).toMatchObject({ kind: 'pause', pauseMs: 800 });
+    expect(parseAudioTag('2 sec pause')).toMatchObject({ kind: 'pause', pauseMs: 2000 });
+    expect(parseAudioTag('pauses dramatically')).toMatchObject({ kind: 'pause', pauseMs: 1400 });
+    expect(parseAudioTag('deep breath')).toMatchObject({
+      kind: 'breath',
+      pauseMs: 420,
+      chatterboxToken: '[inhale]',
+    });
+    expect(parseAudioTag('exhales slowly')).toMatchObject({
+      kind: 'breath',
+      pauseMs: 480,
+      chatterboxToken: '[exhale]',
+    });
+
+    // 4. Action + emotion combos & slash/comma compounds
+    const gaspCombo = parseAudioTag('gasps in shock');
+    expect(gaspCombo?.kind).toBe('delivery');
+    expect(gaspCombo?.chatterboxToken).toBe('[gasp]');
+    expect(gaspCombo?.chatterboxParameters?.exaggeration).toBeGreaterThan(0.8);
+
+    const laughSoft = parseAudioTag('laughs softly');
+    expect(laughSoft?.kind).toBe('delivery');
+    expect(laughSoft?.chatterboxToken).toBe('[laughter]');
+    expect(laughSoft?.dspHints?.gainDeltaDb).toBeLessThan(0);
+
+    const slashCompound = parseAudioTag('urgent/breathless');
+    expect(slashCompound?.kind).toBe('delivery');
+    expect(slashCompound?.dspHints?.speedMultiplier).toBeGreaterThan(1.05);
+
+    // 5. Breath splits & preserves numeric footnote citations like `[1]`
+    const scriptWithCitation =
+      'The report [1] showed massive reserves. [deep breath] [low, ominous, slow] Then the pipelines shut down. [2 sec pause] [sarcastically] What a surprise.';
+    const pocketChunks = segmentScript(scriptWithCitation, { engineId: 'pocket-tts' });
+    expect(pocketChunks[0].text).toContain('[1]');
+    expect(pocketChunks[0].explicitPauseAfterMs).toBe(true);
+    expect(pocketChunks[0].pauseAfterMs).toBe(420);
+    expect(pocketChunks[1].directionTags).toEqual(['low, ominous, slow']);
+    expect(pocketChunks[1].pauseAfterMs).toBe(2000);
+    expect(pocketChunks[2].directionTags).toEqual(['sarcastically']);
+    for (const ch of pocketChunks) {
+      expect(ch.normalizedText).not.toContain('deep breath');
+      expect(ch.normalizedText).not.toContain('ominous');
+      expect(ch.normalizedText).not.toContain('sarcastically');
+    }
+
+    const cbSpans = splitParagraphByAudioTags(scriptWithCitation, 'chatterbox');
+    expect(cbSpans[1].text).toContain('[inhale]');
+  });
 });
